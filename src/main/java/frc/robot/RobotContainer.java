@@ -24,7 +24,8 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-
+    m_driverController.a().whileTrue(m_swerveDrive.runTestDrive());
+    m_driverController.a().onFalse(m_swerveDrive.runStopDrive());
   }
 
   public Command getAutonomousCommand() {

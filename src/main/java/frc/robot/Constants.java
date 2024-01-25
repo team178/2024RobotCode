@@ -16,6 +16,8 @@ import edu.wpi.first.wpilibj.Preferences;
  */
 public final class Constants {
   public static class SwerveConstants {
+    public static final double kWheelDistanceMeters = 0; //! to be set
+    
     public static final int kFrontLeftDrivingCanId = 1;
     public static final int kFrontLeftTurningCanId = 5;
 
@@ -28,6 +30,21 @@ public final class Constants {
     public static final int kBackRightDrivingCanId = 4;
     public static final int kBackRightTurningCanId = 8;
 
+    public static final int kPigeonID = 9;
+
+    public static final double kDefaultTestTurn = 0;
+    public static final double kDefaultTestDrive = 0;
+
+    public static void initSwerveDrivePreferences() {
+      Preferences.initDouble("kSwerveTestTurn", kDefaultTestTurn);
+      Preferences.initDouble("kSwerveTestDrive", kDefaultTestDrive);
+      System.out.println("Swerve preferences initialized");
+    }
+
+    public static void setSwerveDrivePreferences() {
+      Preferences.setDouble("kSwerveTestTurn", kDefaultTestTurn);
+      Preferences.setDouble("kSwerveTestDrive", kDefaultTestDrive);
+    }
   }
 
   public static class SwerveModuleConstants {
@@ -42,27 +59,28 @@ public final class Constants {
     public static final double kDefaultTurnD = 0;
 
     public static void initSwerveModulePreferences() {
-      Preferences.initDouble("kDriveP", kDefaultP);
-      Preferences.initDouble("kDriveI", kDefaultI);
-      Preferences.initDouble("kDriveD", kDefaultD);
-      Preferences.initDouble("kDriveS", kDefaultS);
-      Preferences.initDouble("kDriveV", kDefaultV);
+      Preferences.initDouble("kSwerveModuleDriveP", kDefaultP);
+      Preferences.initDouble("kSwerveModuleDriveI", kDefaultI);
+      Preferences.initDouble("kSwerveModuleDriveD", kDefaultD);
+      Preferences.initDouble("kSwerveModuleDriveS", kDefaultS);
+      Preferences.initDouble("kSwerveModuleDriveV", kDefaultV);
 
-      Preferences.initDouble("kTurnP", kDefaultTurnP);
-      Preferences.initDouble("kTurnI", kDefaultTurnI);
-      Preferences.initDouble("kTurnD", kDefaultTurnD);
+      Preferences.initDouble("kSwerveModuleTurnP", kDefaultTurnP);
+      Preferences.initDouble("kSwerveModuleTurnI", kDefaultTurnI);
+      Preferences.initDouble("kSwerveModuleTurnD", kDefaultTurnD);
+      System.out.println("Swerve module preferences initialized");
     }
 
     public static void resetSwerveModulePreferences() {
-      Preferences.setDouble("kDriveP", kDefaultP);
-      Preferences.setDouble("kDriveI", kDefaultI);
-      Preferences.setDouble("kDriveD", kDefaultD);
-      Preferences.setDouble("kDriveS", kDefaultS);
-      Preferences.setDouble("kDriveV", kDefaultV);
+      Preferences.setDouble("kSwerveModuleDriveP", kDefaultP);
+      Preferences.setDouble("kSwerveModuleDriveI", kDefaultI);
+      Preferences.setDouble("kSwerveModuleDriveD", kDefaultD);
+      Preferences.setDouble("kSwerveModuleDriveS", kDefaultS);
+      Preferences.setDouble("kSwerveModuleDriveV", kDefaultV);
 
-      Preferences.setDouble("kTurnP", kDefaultTurnP);
-      Preferences.setDouble("kTurnI", kDefaultTurnI);
-      Preferences.setDouble("kTurnD", kDefaultTurnD);
+      Preferences.setDouble("kSwerveModuleTurnP", kDefaultTurnP);
+      Preferences.setDouble("kSwerveModuleTurnI", kDefaultTurnI);
+      Preferences.setDouble("kSwerveModuleTurnD", kDefaultTurnD);
     }
   }
 
