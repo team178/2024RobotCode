@@ -67,12 +67,17 @@ public class SDSSwerveModule {
         correctedState.speedMetersPerSecond = state.speedMetersPerSecond;
         correctedState.angle = state.angle.plus(m_chassisAngularOffset);
 
-        correctedState = SwerveModuleState.optimize(correctedState, new Rotation2d(m_turnEncoder.getPosition()));
+        correctedState = SwerveModuleState.optimize(
+            correctedState,
+            new Rotation2d(m_turnEncoder.getPosition()).div(2) // i should probably figure out why it's 2
+        );
+
+        correctedState.angle = correctedState.angle.times(2); // here too
 
         m_desiredSwerveState = correctedState;
 
         m_turnPIDController.setReference(m_desiredSwerveState.angle.getRadians(), ControlType.kPosition);
-
+        // m_drivePIDController.setReference(m_desiredSwerveState.speedMetersPerSecond, ControlType.kVelocity);
     }
 
     public void stopDrive() {
@@ -85,6 +90,15 @@ public class SDSSwerveModule {
         return m_turnEncoder.getPosition();
     }
 
+    public SwerveModuleState getDesiredSwerveState() {
+        return m_desiredSwerveState;
+    }
+
+    public void periodic() {
+        m_turnPIDController.setP(Preferences.getDouble("kSwerveDriveTurnP", SwerveModuleConstants.kDefaultTurnP));
+        m_turnPIDController.setI(Preferences.getDouble("kSwerveDriveTurnI", SwerveModuleConstants.kDefaultTurnI));
+        m_turnPIDController.setD(Preferences.getDouble("kSwerveDriveTurnD", SwerveModuleConstants.kDefaultTurnD));
+    }
     
     public void putInfo(String name) {
         SmartDashboard.putNumber(name + " " + m_turnMotor.getDeviceId() + "TurningVel", m_turnEncoder.getVelocity());

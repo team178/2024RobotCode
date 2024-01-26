@@ -6,6 +6,7 @@ package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.swerve.SwerveDrive;
+import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -16,6 +17,8 @@ public class RobotContainer {
   private final SwerveDrive m_swerveDrive;
 
   public RobotContainer() {
+    Preferences.removeAll();
+    
     m_swerveDrive = new SwerveDrive();
 
     m_driverController = new CommandXboxController(OperatorConstants.kDriverControllerPort);

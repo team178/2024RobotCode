@@ -54,9 +54,11 @@ public final class Constants {
     public static final double kDefaultS = 0;
     public static final double kDefaultV = 0;
 
-    public static final double kDefaultTurnP = 0.1;
+    public static final double kDefaultTurnP = 0.2;
     public static final double kDefaultTurnI = 0;
     public static final double kDefaultTurnD = 0;
+
+    public static final double kTurnRatio = 12.8 / 1; // only use when using internal encoder
 
     public static void initSwerveModulePreferences() {
       Preferences.initDouble("kSwerveModuleDriveP", kDefaultP);

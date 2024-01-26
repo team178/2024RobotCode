@@ -32,7 +32,7 @@ public class SwerveDrive extends SubsystemBase {
         m_frontLeftModule = new SDSSwerveModule(
             SwerveConstants.kFrontLeftTurningCanId,
             SwerveConstants.kFrontLeftDrivingCanId,
-            new Rotation2d(1.857143));
+            new Rotation2d(0)); //WHEN POWERING ROBOT, LINE UP SWERVE MODULE TO FORWARD(using embedded encoders for now)
 
         m_gyro = new Pigeon2(SwerveConstants.kPigeonID);
 
@@ -71,6 +71,8 @@ public class SwerveDrive extends SubsystemBase {
     @Override
     public void periodic() {
         SmartDashboard.putNumber("frontLeftSwerveTurnPos", m_frontLeftModule.getTurnPos());
+        SmartDashboard.putNumber("frontLeftPositionSetpointRad", m_frontLeftModule.getDesiredSwerveState().angle.getRadians());
+        m_frontLeftModule.periodic();
         m_frontLeftModule.putInfo("frontLeft");
     }
 }
