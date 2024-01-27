@@ -29,10 +29,22 @@ public class SwerveDrive extends SubsystemBase {
 
     public SwerveDrive() {
         SwerveConstants.initSwerveDrivePreferences();
-        m_frontLeftModule = new SDSSwerveModule(
-            SwerveConstants.kFrontLeftTurningCanId,
-            SwerveConstants.kFrontLeftDrivingCanId,
-            new Rotation2d(0)); //WHEN POWERING ROBOT, LINE UP SWERVE MODULE TO FORWARD(using embedded encoders for now)
+        m_frontLeftModule = new SDSSwerveModule( 
+            SwerveConstants.kFrontLeftTurningCanID,
+            SwerveConstants.kFrontLeftDrivingCanID,
+            new Rotation2d(0)); //WHEN POWERING ROBOT, LINE UP SWERVE MODULE TO FORWARD, black bolt on LEFT from FRONT, RIGHT from BACK (using embedded encoders for now)
+        m_frontRightModule = new SDSSwerveModule( 
+            SwerveConstants.kFrontRightTurningCanID,
+            SwerveConstants.kFrontRightDrivingCanID,
+            new Rotation2d(0));
+        m_backLeftModule = new SDSSwerveModule( 
+            SwerveConstants.kBackLeftTurningCanID,
+            SwerveConstants.kBackLeftDrivingCanID,
+            new Rotation2d(0));
+        m_backRightModule = new SDSSwerveModule( 
+            SwerveConstants.kBackRightTurningCanID,
+            SwerveConstants.kBackRightDrivingCanID,
+            new Rotation2d(0));
 
         m_gyro = new Pigeon2(SwerveConstants.kPigeonID);
 
@@ -54,17 +66,22 @@ public class SwerveDrive extends SubsystemBase {
 
     public Command runTestDrive() {
         return run(() -> {
-            m_frontLeftModule.setDesiredSwerveState(
-                new SwerveModuleState(0, new Rotation2d(
-                    Preferences.getDouble("kSwerveTestTurn", SwerveConstants.kDefaultTestTurn)
-                ))
+            SwerveModuleState testSwerveState = new SwerveModuleState(Preferences.getDouble("kSwerveTestDrive", SwerveConstants.kDefaultTestDrive),
+                new Rotation2d(Preferences.getDouble("kSwerveTestTurn", SwerveConstants.kDefaultTestTurn))
             );
+            m_frontLeftModule.setDesiredSwerveState(testSwerveState);
+            m_frontRightModule.setDesiredSwerveState(testSwerveState);
+            m_backLeftModule.setDesiredSwerveState(testSwerveState);
+            m_backRightModule.setDesiredSwerveState(testSwerveState);
         });
     }
 
     public Command runStopDrive() {
         return runOnce(() -> {
-           m_frontLeftModule.stopDrive(); 
+           m_frontLeftModule.stopDrive();
+           m_frontRightModule.stopDrive();
+           m_backLeftModule.stopDrive();
+           m_backRightModule.stopDrive();
         });
     }
 

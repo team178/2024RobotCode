@@ -12,6 +12,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Constants.SwerveConstants;
 import frc.robot.Constants.SwerveModuleConstants;
 import frc.robot.controller.MotorFF;
 
@@ -50,9 +51,15 @@ public class SDSSwerveModule {
         m_turnPIDController = m_turnMotor.getPIDController();
         m_drivePIDController = m_driveMotor.getPIDController();
 
-        m_turnPIDController.setP(Preferences.getDouble("kSwerveDriveTurnP", SwerveModuleConstants.kDefaultTurnP));
-        m_turnPIDController.setI(Preferences.getDouble("kSwerveDriveTurnI", SwerveModuleConstants.kDefaultTurnI));
-        m_turnPIDController.setD(Preferences.getDouble("kSwerveDriveTurnD", SwerveModuleConstants.kDefaultTurnD));
+        m_turnPIDController.setP(Preferences.getDouble("kSwerveModuleTurnP", SwerveModuleConstants.kDefaultTurnP));
+        m_turnPIDController.setI(Preferences.getDouble("kSwerveModuleTurnI", SwerveModuleConstants.kDefaultTurnI));
+        m_turnPIDController.setD(Preferences.getDouble("kSwerveModuleTurnD", SwerveModuleConstants.kDefaultTurnD));
+
+        m_drivePIDController.setP(Preferences.getDouble("kSwerveModuleDriveP", SwerveModuleConstants.kDefaultP));
+        m_drivePIDController.setI(Preferences.getDouble("kSwerveModuleDriveI", SwerveModuleConstants.kDefaultI));
+        m_drivePIDController.setD(Preferences.getDouble("kSwerveModuleDriveD", SwerveModuleConstants.kDefaultD));
+        m_drivePIDController.setFF(Preferences.getDouble("kSwerveModuleDriveV", SwerveModuleConstants.kDefaultV));
+        m_driveEncoder.setVelocityConversionFactor(SwerveConstants.kDriveVelocityConversionFactor);
 
         m_turnMotor.burnFlash();
         m_driveMotor.burnFlash();
@@ -63,6 +70,7 @@ public class SDSSwerveModule {
     }
 
     public void setDesiredSwerveState(SwerveModuleState state) {
+        System.out.println("inputted: " + state.speedMetersPerSecond);
         SwerveModuleState correctedState = new SwerveModuleState();
         correctedState.speedMetersPerSecond = state.speedMetersPerSecond;
         correctedState.angle = state.angle.plus(m_chassisAngularOffset);
@@ -75,9 +83,10 @@ public class SDSSwerveModule {
         correctedState.angle = correctedState.angle.times(2); // here too
 
         m_desiredSwerveState = correctedState;
+        System.out.println("desired: " + m_desiredSwerveState.speedMetersPerSecond);
 
         m_turnPIDController.setReference(m_desiredSwerveState.angle.getRadians(), ControlType.kPosition);
-        // m_drivePIDController.setReference(m_desiredSwerveState.speedMetersPerSecond, ControlType.kVelocity);
+        m_drivePIDController.setReference(m_desiredSwerveState.speedMetersPerSecond, ControlType.kVelocity);
     }
 
     public void stopDrive() {
@@ -98,6 +107,11 @@ public class SDSSwerveModule {
         m_turnPIDController.setP(Preferences.getDouble("kSwerveDriveTurnP", SwerveModuleConstants.kDefaultTurnP));
         m_turnPIDController.setI(Preferences.getDouble("kSwerveDriveTurnI", SwerveModuleConstants.kDefaultTurnI));
         m_turnPIDController.setD(Preferences.getDouble("kSwerveDriveTurnD", SwerveModuleConstants.kDefaultTurnD));
+
+        m_drivePIDController.setP(Preferences.getDouble("kSwerveModuleDriveP", SwerveModuleConstants.kDefaultP));
+        m_drivePIDController.setI(Preferences.getDouble("kSwerveModuleDriveI", SwerveModuleConstants.kDefaultI));
+        m_drivePIDController.setD(Preferences.getDouble("kSwerveModuleDriveD", SwerveModuleConstants.kDefaultD));
+        m_drivePIDController.setFF(Preferences.getDouble("kSwerveModuleDriveV", SwerveModuleConstants.kDefaultV));
     }
     
     public void putInfo(String name) {

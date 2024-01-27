@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Preferences;
 
 /**
@@ -18,19 +19,24 @@ public final class Constants {
   public static class SwerveConstants {
     public static final double kWheelDistanceMeters = 0; //! to be set
     
-    public static final int kFrontLeftDrivingCanId = 1;
-    public static final int kFrontLeftTurningCanId = 5;
+    public static final int kFrontLeftDrivingCanID = 1;
+    public static final int kFrontLeftTurningCanID = 5;
 
-    public static final int kFrontRightDrivingCanId = 2;
-    public static final int kFrontRightTurningCanId = 6;
+    public static final int kFrontRightDrivingCanID = 2;
+    public static final int kFrontRightTurningCanID = 6;
 
-    public static final int kBackLeftDrivingCanId = 3;
-    public static final int kBackLeftTurningCanId = 7;
+    public static final int kBackLeftDrivingCanID = 3;
+    public static final int kBackLeftTurningCanID = 7;
 
-    public static final int kBackRightDrivingCanId = 4;
-    public static final int kBackRightTurningCanId = 8;
+    public static final int kBackRightDrivingCanID = 4;
+    public static final int kBackRightTurningCanID = 8;
 
     public static final int kPigeonID = 9;
+
+    public static final double kDriveGearRatio = 6.75 / 1; // rotations on input per rotations on output
+    public static final double kInternalNEOEncoderCPR = 42 / 1; // counts on encoder per rotation
+    public static final double kWheelMetersPerRotation = Units.inchesToMeters(Math.PI * 4); // meters per rotation (wheel circumference)
+    public static final double kDriveVelocityConversionFactor = kWheelMetersPerRotation / (kDriveGearRatio * kInternalNEOEncoderCPR);
 
     public static final double kDefaultTestTurn = 0;
     public static final double kDefaultTestDrive = 0;
@@ -48,11 +54,11 @@ public final class Constants {
   }
 
   public static class SwerveModuleConstants {
-    public static final double kDefaultP = 0.1;
-    public static final double kDefaultI = 0;
+    public static final double kDefaultP = 0;
+    public static final double kDefaultI = 0; // 0.0001
     public static final double kDefaultD = 0;
     public static final double kDefaultS = 0;
-    public static final double kDefaultV = 0;
+    public static final double kDefaultV = 0.145;
 
     public static final double kDefaultTurnP = 0.2;
     public static final double kDefaultTurnI = 0;
