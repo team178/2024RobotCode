@@ -15,9 +15,12 @@ import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.SwerveConstants;
+import frc.robot.util.MechanismLigament2dWrapper;
 import frc.robot.util.RateLimiter;
 
 public class SwerveDrive extends SubsystemBase {
@@ -40,6 +43,12 @@ public class SwerveDrive extends SubsystemBase {
     private RateLimiter magnitudeAccelLimiter;
     private RateLimiter directionVelLimiter;
     private RateLimiter rotationAccelLimiter;
+
+    private Mechanism2d swerveVisualizer;
+    private MechanismLigament2dWrapper frontLeftLigament;
+    private MechanismLigament2dWrapper frontRightLigament;
+    private MechanismLigament2dWrapper backLeftLigament;
+    private MechanismLigament2dWrapper backRightLigament;
 
     public SwerveDrive() {
         SwerveConstants.initSwerveDrivePreferences();
@@ -73,6 +82,22 @@ public class SwerveDrive extends SubsystemBase {
             new Translation2d(SwerveConstants.kWheelDistanceMeters / 2, -SwerveConstants.kWheelDistanceMeters / 2)
         );
         // swerveOdomentry = new SwerveDriveOdometry(m_swerveKinematics, Rotation2d.fromDegrees(m_gyro.getAngle()), null);
+
+        frontLeftLigament = new MechanismLigament2dWrapper("frontLeftWheel", 0, 90, 5, new Color8Bit(Color.kRed));
+        frontRightLigament = new MechanismLigament2dWrapper("frontLeftWheel", 0, 90, 5, new Color8Bit(Color.kRed));
+        backLeftLigament = new MechanismLigament2dWrapper("frontLeftWheel", 0, 90, 5, new Color8Bit(Color.kRed));
+        backRightLigament = new MechanismLigament2dWrapper("frontLeftWheel", 0, 90, 5, new Color8Bit(Color.kRed));
+        
+        swerveVisualizer = new Mechanism2d(10, 10);
+        MechanismRoot2d root = swerveVisualizer.getRoot("root", 2, 2);
+
+        MechanismLigament2d leftFrame = root.append(new MechanismLigament2d("leftFrame", 6, 90, 0, new Color8Bit(Color.kBlack)));
+        MechanismLigament2d topFrame = leftFrame.append(new MechanismLigament2d("topFrame", 6, 0, 0, new Color8Bit(Color.kBlack)));
+        MechanismLigament2d rightFrame = root.append(new MechanismLigament2d("rightFrame", 6, 270, 0, new Color8Bit(Color.kBlack)));
+        root.append(backLeftLigament.ligament);
+        leftFrame.append(frontLeftLigament.ligament);
+        topFrame.append(frontRightLigament.ligament);
+        rightFrame.append(backRightLigament.ligament);
     }
 
     public static double swerveAngleDifference(double newAngle, double oldAngle) {
@@ -97,7 +122,15 @@ public class SwerveDrive extends SubsystemBase {
     }
 
     public void rawDriveInputs(double rawXSpeed, double rawYSpeed, double rawRotSpeed) {
-        swerveKinematics.toSwerveModuleStates(new ChassisSpeeds(rawXSpeed, rawYSpeed, rawRotSpeed));
+        SwerveModuleState[] states = swerveKinematics.toSwerveModuleStates(new ChassisSpeeds(rawXSpeed, rawYSpeed, rawRotSpeed));
+        frontLeftLigament.setLength(states[0].speedMetersPerSecond * 6 / SwerveConstants.kWheelDistanceMeters);
+        frontLeftLigament.setAngle(states[0].angle.getDegrees());
+        frontRightLigament.setLength(states[1].speedMetersPerSecond * 6 / SwerveConstants.kWheelDistanceMeters);
+        frontRightLigament.setAngle(states[1].angle.getDegrees());
+        backLeftLigament.setLength(states[2].speedMetersPerSecond * 6 / SwerveConstants.kWheelDistanceMeters);
+        backLeftLigament.setAngle(states[2].angle.getDegrees());
+        backRightLigament.setLength(states[3].speedMetersPerSecond * 6 / SwerveConstants.kWheelDistanceMeters);
+        backRightLigament.setAngle(states[3].angle.getDegrees());
         // apply to modules
     }
 
