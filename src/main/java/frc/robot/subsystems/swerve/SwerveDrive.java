@@ -1,6 +1,7 @@
 package frc.robot.subsystems.swerve;
 
 import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
 
@@ -91,13 +92,17 @@ public class SwerveDrive extends SubsystemBase {
         swerveVisualizer = new Mechanism2d(10, 10);
         MechanismRoot2d root = swerveVisualizer.getRoot("root", 2, 2);
 
-        MechanismLigament2d leftFrame = root.append(new MechanismLigament2d("leftFrame", 6, 90, 0, new Color8Bit(Color.kBlack)));
-        MechanismLigament2d topFrame = leftFrame.append(new MechanismLigament2d("topFrame", 6, 0, 0, new Color8Bit(Color.kBlack)));
-        MechanismLigament2d rightFrame = root.append(new MechanismLigament2d("rightFrame", 6, 270, 0, new Color8Bit(Color.kBlack)));
+        // has a before name so it goes under
+        MechanismLigament2d leftFrame = root.append(new MechanismLigament2d("aLeftFrame", 6, 90, 0, new Color8Bit(Color.kBlue)));
+        MechanismLigament2d topFrame = leftFrame.append(new MechanismLigament2d("aTopFrame", 6, -90, 0, new Color8Bit(Color.kBlue)));
+        MechanismLigament2d rightFrame = topFrame.append(new MechanismLigament2d("aRightFrame", 6, -90, 0, new Color8Bit(Color.kBlue)));
+        MechanismLigament2d bottomFrame = rightFrame.append(new MechanismLigament2d("aBottomFrame", 6, -90, 0, new Color8Bit(Color.kBlue)));
         root.append(backLeftLigament.ligament);
         leftFrame.append(frontLeftLigament.ligament);
         topFrame.append(frontRightLigament.ligament);
         rightFrame.append(backRightLigament.ligament);
+        
+        SmartDashboard.putData("Swerve Visualization", swerveVisualizer);
     }
 
     public static double swerveAngleDifference(double newAngle, double oldAngle) {
@@ -106,31 +111,34 @@ public class SwerveDrive extends SubsystemBase {
             (newAngle - oldAngle);
     }
 
-    public Command runDriveInputs(double rawXSpeed, double rawYSpeed, double rawRotSpeed) {
+    public Command runDriveInputs(DoubleSupplier rawXSpeed, DoubleSupplier rawYSpeed, DoubleSupplier rawRotSpeed, BooleanSupplier fieldRelative) {
         return run(() -> {
-            double rawMagSpeed = SwerveConstants.kMagVelLimit * Math.sqrt(Math.pow(rawXSpeed, 2) + Math.pow(rawYSpeed, 2));
-            double rawDir = Math.atan2(rawYSpeed, rawXSpeed);
+            double rawMagSpeed = SwerveConstants.kMagVelLimit * Math.sqrt(Math.pow(rawXSpeed.getAsDouble(), 2) + Math.pow(rawYSpeed.getAsDouble(), 2));
+            double rawDir = Math.atan2(rawYSpeed.getAsDouble(), rawXSpeed.getAsDouble());
 
             double magSpeed = magnitudeAccelLimiter.calculate(rawMagSpeed * SwerveConstants.kMagVelLimit);
             double dir = directionVelLimiter.angleCalculate(rawDir);
             
             double xSpeed = magSpeed * Math.cos(dir);
             double ySpeed = magSpeed * Math.sin(dir);
-            double rotSpeed = rotationAccelLimiter.calculate(rawRotSpeed);
-            rawDriveInputs(xSpeed, ySpeed, rotSpeed);
+            double rotSpeed = rotationAccelLimiter.calculate(rawRotSpeed.getAsDouble() * SwerveConstants.kRotVelLimit);
+            rawDriveInputs(xSpeed, ySpeed, rotSpeed, fieldRelative.getAsBoolean());
         });
     }
 
-    public void rawDriveInputs(double rawXSpeed, double rawYSpeed, double rawRotSpeed) {
-        SwerveModuleState[] states = swerveKinematics.toSwerveModuleStates(new ChassisSpeeds(rawXSpeed, rawYSpeed, rawRotSpeed));
-        frontLeftLigament.setLength(states[0].speedMetersPerSecond * 6 / SwerveConstants.kWheelDistanceMeters);
-        frontLeftLigament.setAngle(states[0].angle.getDegrees());
-        frontRightLigament.setLength(states[1].speedMetersPerSecond * 6 / SwerveConstants.kWheelDistanceMeters);
+    public void rawDriveInputs(double rawXSpeed, double rawYSpeed, double rawRotSpeed, boolean fieldRelative) {
+        SwerveModuleState[] states = swerveKinematics.toSwerveModuleStates(/*fieldRelative ?
+            ChassisSpeeds.fromFieldRelativeSpeeds(rawXSpeed, rawYSpeed, rawRotSpeed, Rotation2d.fromDegrees(gyro.getAngle())) : // see if gyro is done correctly */
+            new ChassisSpeeds(rawXSpeed, rawYSpeed, rawRotSpeed)
+        );
+        frontLeftLigament.setLength(states[0].speedMetersPerSecond / 30);
+        frontLeftLigament.setAngle(states[0].angle.getDegrees() - 90);
+        frontRightLigament.setLength(states[1].speedMetersPerSecond / 30);
         frontRightLigament.setAngle(states[1].angle.getDegrees());
-        backLeftLigament.setLength(states[2].speedMetersPerSecond * 6 / SwerveConstants.kWheelDistanceMeters);
+        backLeftLigament.setLength(states[2].speedMetersPerSecond / 30);
         backLeftLigament.setAngle(states[2].angle.getDegrees());
-        backRightLigament.setLength(states[3].speedMetersPerSecond * 6 / SwerveConstants.kWheelDistanceMeters);
-        backRightLigament.setAngle(states[3].angle.getDegrees());
+        backRightLigament.setLength(states[3].speedMetersPerSecond / 30);
+        backRightLigament.setAngle(states[3].angle.getDegrees() + 90);
         // apply to modules
     }
 

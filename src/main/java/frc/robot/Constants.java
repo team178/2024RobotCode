@@ -17,7 +17,7 @@ import edu.wpi.first.wpilibj.Preferences;
  */
 public final class Constants {
   public static class SwerveConstants {
-    public static final double kWheelDistanceMeters = 0; //! to be set
+    public static final double kWheelDistanceMeters = 10; //! to be set
     
     public static final int kFrontLeftDrivingCanID = 1;
     public static final int kFrontLeftTurningCanID = 5;
@@ -41,7 +41,7 @@ public final class Constants {
     public static final double kMagVelLimit = 6; // m/s
     public static final double kDirVelLimit = 10; // rad/s
     public static final double kRotVelLimit = 5; // rad/s
-    public static final double kMagAccelLimit = 15; // m/s^2
+    public static final double kMagAccelLimit = 100; // m/s^2
     public static final double kRotAccelLimit = 10; // rad/s^2
 
     public static final double kDefaultTestTurn = 0;
