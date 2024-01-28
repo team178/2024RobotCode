@@ -38,6 +38,12 @@ public final class Constants {
     public static final double kWheelMetersPerRotation = Units.inchesToMeters(Math.PI * 4); // meters per rotation (wheel circumference)
     public static final double kDriveVelocityConversionFactor = kWheelMetersPerRotation / (kDriveGearRatio * kInternalNEOEncoderCPR);
 
+    public static final double kMagVelLimit = 6; // m/s
+    public static final double kDirVelLimit = 10; // rad/s
+    public static final double kRotVelLimit = 5; // rad/s
+    public static final double kMagAccelLimit = 15; // m/s^2
+    public static final double kRotAccelLimit = 10; // rad/s^2
+
     public static final double kDefaultTestTurn = 0;
     public static final double kDefaultTestDrive = 0;
 

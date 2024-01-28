@@ -4,7 +4,7 @@
 
 // Edited by Team 178 for adjustable constants
 
-package frc.robot.controller;
+package frc.robot.util;
 
 /**
  * A helper class that computes feedforward outputs for a simple arm (modeled as a motor acting

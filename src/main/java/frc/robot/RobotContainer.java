@@ -13,22 +13,22 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class RobotContainer {
 
-  private final CommandXboxController m_driverController;
-  private final SwerveDrive m_swerveDrive;
+  private final CommandXboxController driverController;
+  private final SwerveDrive swerveDrive;
 
   public RobotContainer() {
     Preferences.removeAll();
     
-    m_swerveDrive = new SwerveDrive();
+    swerveDrive = new SwerveDrive();
 
-    m_driverController = new CommandXboxController(OperatorConstants.kDriverControllerPort);
+    driverController = new CommandXboxController(OperatorConstants.kDriverControllerPort);
 
     configureBindings();
   }
 
   private void configureBindings() {
-    m_driverController.a().whileTrue(m_swerveDrive.runTestDrive());
-    m_driverController.a().onFalse(m_swerveDrive.runStopDrive());
+    driverController.a().whileTrue(swerveDrive.runTestDrive());
+    driverController.a().onFalse(swerveDrive.runStopDrive());
   }
 
   public Command getAutonomousCommand() {

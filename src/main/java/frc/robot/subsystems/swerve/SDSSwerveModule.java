@@ -6,7 +6,6 @@ import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.Preferences;
@@ -14,23 +13,22 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.Constants.SwerveModuleConstants;
-import frc.robot.controller.MotorFF;
 
 public class SDSSwerveModule {
     private static boolean preferencesInitialized = false;
 
-    private CANSparkMax m_turnMotor;
-    private CANSparkMax m_driveMotor;
+    private CANSparkMax turnMotor;
+    private CANSparkMax driveMotor;
 
-    private RelativeEncoder m_turnEncoder;
-    private RelativeEncoder m_driveEncoder;
+    private RelativeEncoder turnEncoder;
+    private RelativeEncoder driveEncoder;
 
-    private SparkPIDController m_turnPIDController;
-    private SparkPIDController m_drivePIDController;
+    private SparkPIDController turnPIDController;
+    private SparkPIDController drivePIDController;
 
-    private Rotation2d m_chassisAngularOffset;
+    private Rotation2d chassisAngularOffset;
 
-    private SwerveModuleState m_desiredSwerveState;
+    private SwerveModuleState desiredSwerveState;
 
     private SysIdRoutine routine;
 
@@ -39,84 +37,92 @@ public class SDSSwerveModule {
             SwerveModuleConstants.initSwerveModulePreferences();
             preferencesInitialized = true;
         }
-        m_turnMotor = new CANSparkMax(turnID, MotorType.kBrushless);
-        m_driveMotor = new CANSparkMax(driveID, MotorType.kBrushless);
+        turnMotor = new CANSparkMax(turnID, MotorType.kBrushless);
+        driveMotor = new CANSparkMax(driveID, MotorType.kBrushless);
 
-        m_turnMotor.restoreFactoryDefaults();
-        m_driveMotor.restoreFactoryDefaults();
+        turnMotor.restoreFactoryDefaults();
+        driveMotor.restoreFactoryDefaults();
 
-        m_turnEncoder = m_turnMotor.getEncoder(); // Will change to absolute once mag encoder is wired properly
-        m_driveEncoder = m_driveMotor.getEncoder();
+        turnEncoder = turnMotor.getEncoder(); // Will change to absolute once mag encoder is wired properly
+        driveEncoder = driveMotor.getEncoder();
 
-        m_turnPIDController = m_turnMotor.getPIDController();
-        m_drivePIDController = m_driveMotor.getPIDController();
+        turnPIDController = turnMotor.getPIDController();
+        drivePIDController = driveMotor.getPIDController();
 
-        m_turnPIDController.setP(Preferences.getDouble("kSwerveModuleTurnP", SwerveModuleConstants.kDefaultTurnP));
-        m_turnPIDController.setI(Preferences.getDouble("kSwerveModuleTurnI", SwerveModuleConstants.kDefaultTurnI));
-        m_turnPIDController.setD(Preferences.getDouble("kSwerveModuleTurnD", SwerveModuleConstants.kDefaultTurnD));
+        turnPIDController.setP(Preferences.getDouble("kSwerveModuleTurnP", SwerveModuleConstants.kDefaultTurnP));
+        turnPIDController.setI(Preferences.getDouble("kSwerveModuleTurnI", SwerveModuleConstants.kDefaultTurnI));
+        turnPIDController.setD(Preferences.getDouble("kSwerveModuleTurnD", SwerveModuleConstants.kDefaultTurnD));
 
-        m_drivePIDController.setP(Preferences.getDouble("kSwerveModuleDriveP", SwerveModuleConstants.kDefaultP));
-        m_drivePIDController.setI(Preferences.getDouble("kSwerveModuleDriveI", SwerveModuleConstants.kDefaultI));
-        m_drivePIDController.setD(Preferences.getDouble("kSwerveModuleDriveD", SwerveModuleConstants.kDefaultD));
-        m_drivePIDController.setFF(Preferences.getDouble("kSwerveModuleDriveV", SwerveModuleConstants.kDefaultV));
-        m_driveEncoder.setVelocityConversionFactor(SwerveConstants.kDriveVelocityConversionFactor);
+        drivePIDController.setP(Preferences.getDouble("kSwerveModuleDriveP", SwerveModuleConstants.kDefaultP));
+        drivePIDController.setI(Preferences.getDouble("kSwerveModuleDriveI", SwerveModuleConstants.kDefaultI));
+        drivePIDController.setD(Preferences.getDouble("kSwerveModuleDriveD", SwerveModuleConstants.kDefaultD));
+        drivePIDController.setFF(Preferences.getDouble("kSwerveModuleDriveV", SwerveModuleConstants.kDefaultV));
+        driveEncoder.setVelocityConversionFactor(SwerveConstants.kDriveVelocityConversionFactor);
 
-        m_turnMotor.burnFlash();
-        m_driveMotor.burnFlash();
+        // !TO BE IMPLEMENTED; relative encoder usage will REQUIRE ENCODER LOOPING as well (from max swerve)
+        
+        // Enable PID wrap around for the turning motor. This will allow the PID
+        // controller to go through 0 to get to the setpoint i.e. going from 350 degrees
+        // to 10 degrees will go through 0 rather than the other direction which is a
+        // longer route.
+        // m_turningPIDController.setPositionPIDWrappingEnabled(true);
+        // m_turningPIDController.setPositionPIDWrappingMinInput(ModuleConstants.kTurningEncoderPositionPIDMinInput);
+        // m_turningPIDController.setPositionPIDWrappingMaxInput(ModuleConstants.kTurningEncoderPositionPIDMaxInput);
 
-        m_chassisAngularOffset = angularOffset;
+        turnMotor.burnFlash();
+        driveMotor.burnFlash();
 
-        m_desiredSwerveState = new SwerveModuleState(0, new Rotation2d(0));
+        chassisAngularOffset = angularOffset;
+
+        setDesiredSwerveState(new SwerveModuleState(0, new Rotation2d()));
     }
 
     public void setDesiredSwerveState(SwerveModuleState state) {
-        System.out.println("inputted: " + state.speedMetersPerSecond);
         SwerveModuleState correctedState = new SwerveModuleState();
         correctedState.speedMetersPerSecond = state.speedMetersPerSecond;
-        correctedState.angle = state.angle.plus(m_chassisAngularOffset);
+        correctedState.angle = state.angle.plus(chassisAngularOffset);
 
         correctedState = SwerveModuleState.optimize(
             correctedState,
-            new Rotation2d(m_turnEncoder.getPosition()).div(2) // i should probably figure out why it's 2
+            new Rotation2d(turnEncoder.getPosition()).div(2) // i should probably figure out why it's 2
         );
 
         correctedState.angle = correctedState.angle.times(2); // here too
 
-        m_desiredSwerveState = correctedState;
-        System.out.println("desired: " + m_desiredSwerveState.speedMetersPerSecond);
+        desiredSwerveState = correctedState;
 
-        m_turnPIDController.setReference(m_desiredSwerveState.angle.getRadians(), ControlType.kPosition);
-        m_drivePIDController.setReference(m_desiredSwerveState.speedMetersPerSecond, ControlType.kVelocity);
+        turnPIDController.setReference(desiredSwerveState.angle.getRadians(), ControlType.kPosition);
+        drivePIDController.setReference(desiredSwerveState.speedMetersPerSecond, ControlType.kVelocity);
     }
 
     public void stopDrive() {
         SwerveModuleState stopState = new SwerveModuleState();
-        stopState.angle = m_desiredSwerveState.angle;
+        stopState.angle = desiredSwerveState.angle;
         setDesiredSwerveState(stopState);
     }
 
     public double getTurnPos() {
-        return m_turnEncoder.getPosition();
+        return turnEncoder.getPosition();
     }
 
     public SwerveModuleState getDesiredSwerveState() {
-        return m_desiredSwerveState;
+        return desiredSwerveState;
     }
 
     public void periodic() {
-        m_turnPIDController.setP(Preferences.getDouble("kSwerveDriveTurnP", SwerveModuleConstants.kDefaultTurnP));
-        m_turnPIDController.setI(Preferences.getDouble("kSwerveDriveTurnI", SwerveModuleConstants.kDefaultTurnI));
-        m_turnPIDController.setD(Preferences.getDouble("kSwerveDriveTurnD", SwerveModuleConstants.kDefaultTurnD));
+        turnPIDController.setP(Preferences.getDouble("kSwerveDriveTurnP", SwerveModuleConstants.kDefaultTurnP));
+        turnPIDController.setI(Preferences.getDouble("kSwerveDriveTurnI", SwerveModuleConstants.kDefaultTurnI));
+        turnPIDController.setD(Preferences.getDouble("kSwerveDriveTurnD", SwerveModuleConstants.kDefaultTurnD));
 
-        m_drivePIDController.setP(Preferences.getDouble("kSwerveModuleDriveP", SwerveModuleConstants.kDefaultP));
-        m_drivePIDController.setI(Preferences.getDouble("kSwerveModuleDriveI", SwerveModuleConstants.kDefaultI));
-        m_drivePIDController.setD(Preferences.getDouble("kSwerveModuleDriveD", SwerveModuleConstants.kDefaultD));
-        m_drivePIDController.setFF(Preferences.getDouble("kSwerveModuleDriveV", SwerveModuleConstants.kDefaultV));
+        drivePIDController.setP(Preferences.getDouble("kSwerveModuleDriveP", SwerveModuleConstants.kDefaultP));
+        drivePIDController.setI(Preferences.getDouble("kSwerveModuleDriveI", SwerveModuleConstants.kDefaultI));
+        drivePIDController.setD(Preferences.getDouble("kSwerveModuleDriveD", SwerveModuleConstants.kDefaultD));
+        drivePIDController.setFF(Preferences.getDouble("kSwerveModuleDriveV", SwerveModuleConstants.kDefaultV));
     }
     
     public void putInfo(String name) {
-        SmartDashboard.putNumber(name + " " + m_turnMotor.getDeviceId() + "TurningVel", m_turnEncoder.getVelocity());
-        SmartDashboard.putNumber(name + " " + m_driveMotor.getDeviceId() + "DrivingVel", m_driveEncoder.getVelocity());
+        SmartDashboard.putNumber(name + " " + turnMotor.getDeviceId() + "TurningVel", turnEncoder.getVelocity());
+        SmartDashboard.putNumber(name + " " + driveMotor.getDeviceId() + "DrivingVel", driveEncoder.getVelocity());
 
     }
 }
