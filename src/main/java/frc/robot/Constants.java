@@ -17,7 +17,7 @@ import edu.wpi.first.wpilibj.Preferences;
  */
 public final class Constants {
   public static class SwerveConstants {
-    public static final double kWheelDistanceMeters = 10; //! to be set
+    public static final double kWheelDistanceMeters = Units.inchesToMeters(19.625); //! to be set
     
     public static final int kFrontLeftDrivingCanID = 1;
     public static final int kFrontLeftTurningCanID = 5;
@@ -25,24 +25,26 @@ public final class Constants {
     public static final int kFrontRightDrivingCanID = 2;
     public static final int kFrontRightTurningCanID = 6;
 
-    public static final int kBackLeftDrivingCanID = 3;
-    public static final int kBackLeftTurningCanID = 7;
+    public static final int kBackLeftDrivingCanID = 4;
+    public static final int kBackLeftTurningCanID = 8;
 
-    public static final int kBackRightDrivingCanID = 4;
-    public static final int kBackRightTurningCanID = 8;
+    public static final int kBackRightDrivingCanID = 3;
+    public static final int kBackRightTurningCanID = 7;
 
     public static final int kPigeonID = 9;
 
     public static final double kDriveGearRatio = 6.75 / 1; // rotations on input per rotations on output
     public static final double kInternalNEOEncoderCPR = 42 / 1; // counts on encoder per rotation
     public static final double kWheelMetersPerRotation = Units.inchesToMeters(Math.PI * 4); // meters per rotation (wheel circumference)
-    public static final double kDriveVelocityConversionFactor = kWheelMetersPerRotation / (kDriveGearRatio * kInternalNEOEncoderCPR);
+    public static final double kDriveVelocityConversionFactor = kWheelMetersPerRotation / (kDriveGearRatio * kInternalNEOEncoderCPR); //!This MAY BE meters/min
+    public static final double kDrivePositionConversionFactor = kWheelMetersPerRotation / (kDriveGearRatio * kInternalNEOEncoderCPR);
 
-    public static final double kMagVelLimit = 6; // m/s
+    public static final double kMaxWheelSpeed = 6; // m/s
+    public static final double kMagVelLimit = 4; // m/s
     public static final double kDirVelLimit = 10; // rad/s
-    public static final double kRotVelLimit = 5; // rad/s
-    public static final double kMagAccelLimit = 100; // m/s^2
-    public static final double kRotAccelLimit = 10; // rad/s^2
+    public static final double kRotVelLimit = 6; // rad/s
+    public static final double kMagAccelLimit = 20; // m/s^2
+    public static final double kRotAccelLimit = 30; // rad/s^2
 
     public static final double kDefaultTestTurn = 0;
     public static final double kDefaultTestDrive = 0;

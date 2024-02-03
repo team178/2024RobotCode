@@ -79,7 +79,7 @@ public class RateLimiter {
     double elapsedTime = currentTime - prevTime;
     prevVal +=
         MathUtil.clamp(
-            SwerveDrive.swerveAngleDifference(input, prevVal),
+            SwerveDrive.swerveAngleDifference(input, prevVal).angle.getRadians(),
             m_negativeRateLimit * elapsedTime,
             m_positiveRateLimit * elapsedTime);
     if(Math.abs(prevVal) > Math.PI) {

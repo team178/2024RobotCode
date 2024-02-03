@@ -1,3 +1,18 @@
 [
-
+  {
+    "name": "/Preferences/kSwerveTestTurn",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/kSwerveTestDrive",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  }
 ]

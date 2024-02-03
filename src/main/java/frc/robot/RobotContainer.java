@@ -9,7 +9,9 @@ import frc.robot.subsystems.swerve.SwerveDrive;
 
 import java.util.function.BooleanSupplier;
 
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.Preferences;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -29,6 +31,8 @@ public class RobotContainer {
     altController = new CommandXboxController(1);
 
     configureBindings();
+    // CameraServer.startAutomaticCapture();
+    // Shuffleboard.getTab("Camera").add("Camera", CameraServer.getVideo().getSource());
   }
 
   private void configureBindings() {
@@ -36,11 +40,12 @@ public class RobotContainer {
     driverController.a().onFalse(swerveDrive.runStopDrive());
     BooleanSupplier leftBumperSupplier = driverController.leftBumper()::getAsBoolean;
     swerveDrive.setDefaultCommand(swerveDrive.runDriveInputs(
-      driverController::getLeftX,
       driverController::getLeftY,
+      driverController::getLeftX,
       driverController::getRightX, // use in real robot
       // altController::getLeftX, //use in simulation
-      leftBumperSupplier
+      leftBumperSupplier,
+      true
     ));
   }
 

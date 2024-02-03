@@ -35,6 +35,9 @@ public class MechanismLigament2dWrapper {
     }
 
     public void setLength(double length) {
+        if(length < 0) {
+            ligament.setAngle(angle - 180);
+        }
         ligament.setLength(length);
         this.length = length;
     }
