@@ -11,6 +11,7 @@
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
+      "/SmartDashboard/Field": "Field2d",
       "/SmartDashboard/Swerve Visualization": "Mechanism2d"
     },
     "windows": {
@@ -22,8 +23,14 @@
     }
   },
   "NetworkTables": {
+    "Retained Values": {
+      "open": false
+    },
     "transitory": {
-      "SmartDashboard": {
+      "Swerve Modules": {
+        "2 Back Left": {
+          "open": true
+        },
         "open": true
       }
     }

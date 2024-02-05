@@ -1,6 +1,6 @@
 [
   {
-    "name": "/Preferences/kSwerveTestTurn",
+    "name": "/Preferences/kSwerveModuleDriveP",
     "type": "double",
     "value": 0.0,
     "properties": {
@@ -8,7 +8,55 @@
     }
   },
   {
-    "name": "/Preferences/kSwerveTestDrive",
+    "name": "/Preferences/kSwerveModuleDriveI",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/kSwerveModuleDriveD",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/kSwerveModuleDriveS",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/kSwerveModuleDriveV",
+    "type": "double",
+    "value": 0.145,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/kSwerveModuleTurnP",
+    "type": "double",
+    "value": 0.2,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/kSwerveModuleTurnI",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/kSwerveModuleTurnD",
     "type": "double",
     "value": 0.0,
     "properties": {

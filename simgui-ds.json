@@ -15,12 +15,12 @@
         {
           "decKey": 65,
           "incKey": 68,
-          "keyRate": 0.5
+          "keyRate": 1.0
         },
         {
           "decKey": 87,
           "incKey": 83,
-          "keyRate": 0.5
+          "keyRate": 1.0
         },
         {
           "decKey": 69,

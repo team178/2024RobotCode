@@ -28,7 +28,7 @@ public class RobotContainer {
     swerveDrive = new SwerveDrive();
 
     driverController = new CommandXboxController(OperatorConstants.kDriverControllerPort);
-    altController = new CommandXboxController(1);
+    altController = new CommandXboxController(OperatorConstants.kAuxControllerPort);
 
     configureBindings();
     // CameraServer.startAutomaticCapture();
@@ -38,6 +38,7 @@ public class RobotContainer {
   private void configureBindings() {
     driverController.a().whileTrue(swerveDrive.runTestDrive());
     driverController.a().onFalse(swerveDrive.runStopDrive());
+    driverController.y().onTrue(swerveDrive.runZeroGyro());
     BooleanSupplier leftBumperSupplier = driverController.leftBumper()::getAsBoolean;
     swerveDrive.setDefaultCommand(swerveDrive.runDriveInputs(
       driverController::getLeftY,

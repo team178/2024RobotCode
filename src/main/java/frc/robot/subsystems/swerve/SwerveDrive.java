@@ -13,6 +13,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.Preferences;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -36,14 +37,6 @@ public class SwerveDrive extends SubsystemBase {
     private SwerveDriveKinematics swerveKinematics;
     private SwerveDriveOdometry swerveOdomentry;
 
-    // meters per second
-    private double driveXSpeed;
-    private double driveYSpeed;
-    // radians per second
-    private double driveRotSpeed;
-    // radians
-    private double prevDir;
-
     private RateLimiter magnitudeAccelLimiter;
     private RateLimiter directionVelLimiter;
     private RateLimiter rotationAccelLimiter;
@@ -58,29 +51,52 @@ public class SwerveDrive extends SubsystemBase {
     private MechanismLigament2dWrapper backLeftDirLigament;
     private MechanismLigament2dWrapper backRightDirLigament;
 
+    private Field2d field;
+
     public SwerveDrive() {
+        initComponents();
+        initMathModels();
+        initSimulations();
+    }
+
+    private void initComponents() {
         // horns face forward
         // battery on left
         SwerveConstants.initSwerveDrivePreferences();
-        frontLeftModule = new SDSSwerveModule( 
+        frontLeftModule = new SDSSwerveModule(
+            "0 Front Left",
             SwerveConstants.kFrontLeftTurningCanID,
             SwerveConstants.kFrontLeftDrivingCanID,
-            new Rotation2d(0)); //WHEN POWERING ROBOT, LINE UP SWERVE MODULE TO FORWARD, black bolt on LEFT from FRONT, RIGHT from BACK (using embedded encoders for now)
+            new Rotation2d(0),
+            false
+        ); //WHEN POWERING ROBOT, LINE UP SWERVE MODULE TO FORWARD, black bolt on RIGHT from FRONT, LEFT from BACK (using internal encoders for now)
         frontRightModule = new SDSSwerveModule(
+            "1 Front Right",
             SwerveConstants.kFrontRightTurningCanID,
             SwerveConstants.kFrontRightDrivingCanID,
-            new Rotation2d(0));
-        // backLeftModule = new SDSSwerveModule(                   // mechanical no work
-        //     SwerveConstants.kBackLeftTurningCanID,
-        //     SwerveConstants.kBackLeftDrivingCanID,
-        //     new Rotation2d(0));
-        backRightModule = new SDSSwerveModule( 
+            new Rotation2d(0),
+            false
+        );
+        backLeftModule = new SDSSwerveModule(
+            "2 Back Left",
+            SwerveConstants.kBackLeftTurningCanID,
+            SwerveConstants.kBackLeftDrivingCanID,
+            new Rotation2d(0),
+            false
+        );
+        backRightModule = new SDSSwerveModule( // mechanical no work
+            "3 Back Right",
             SwerveConstants.kBackRightTurningCanID,
             SwerveConstants.kBackRightDrivingCanID,
-            new Rotation2d(0));
+            new Rotation2d(0),
+            false
+        );
 
         gyro = new Pigeon2(SwerveConstants.kPigeonID);
+        gyro.reset();
+    }
 
+    private void initMathModels() {
         magnitudeAccelLimiter = new RateLimiter(SwerveConstants.kMagAccelLimit);
         directionVelLimiter = new RateLimiter(SwerveConstants.kDirVelLimit, -SwerveConstants.kDirVelLimit, Math.PI / 2);
         rotationAccelLimiter = new RateLimiter(SwerveConstants.kRotAccelLimit);
@@ -92,7 +108,9 @@ public class SwerveDrive extends SubsystemBase {
             new Translation2d(SwerveConstants.kWheelDistanceMeters / 2, SwerveConstants.kWheelDistanceMeters / 2)
         );
         // swerveOdomentry = new SwerveDriveOdometry(m_swerveKinematics, Rotation2d.fromDegrees(m_gyro.getAngle()), null);
+    }
 
+    private void initSimulations() {
         frontLeftLigament = new MechanismLigament2dWrapper("frontLeftWheel", 0, 90, 5, new Color8Bit(Color.kRed));
         frontRightLigament = new MechanismLigament2dWrapper("frontRightWheel", 0, 90, 5, new Color8Bit(Color.kOrange));
         backLeftLigament = new MechanismLigament2dWrapper("backLeftWheel", 0, 90, 5, new Color8Bit(Color.kYellow));
@@ -119,8 +137,12 @@ public class SwerveDrive extends SubsystemBase {
         leftFrame.append(frontLeftDirLigament.ligament);
         topFrame.append(frontRightDirLigament.ligament);
         rightFrame.append(backRightDirLigament.ligament);
+
+        field = new Field2d();
         
         SmartDashboard.putData("Swerve Visualization", swerveVisualizer);
+        SmartDashboard.putData("Field", field);
+        
     }
 
     public static SwerveModuleState swerveAngleDifference(double newAngle, double oldAngle) {
@@ -191,27 +213,12 @@ public class SwerveDrive extends SubsystemBase {
     }
 
     public void rawDriveInputs(double rawXSpeed, double rawYSpeed, double rawRotSpeed, boolean fieldRelative) {
-        SwerveModuleState[] states = swerveKinematics.toSwerveModuleStates(/*fieldRelative ?
-            ChassisSpeeds.fromFieldRelativeSpeeds(rawXSpeed, rawYSpeed, rawRotSpeed, Rotation2d.fromDegrees(gyro.getAngle())) : // see if gyro is done correctly */
+        SwerveModuleState[] states = swerveKinematics.toSwerveModuleStates(fieldRelative ?
+            ChassisSpeeds.fromFieldRelativeSpeeds(rawXSpeed, rawYSpeed, rawRotSpeed, Rotation2d.fromDegrees(-gyro.getAngle())) : // see if gyro is done correctly 
             new ChassisSpeeds(rawXSpeed, rawYSpeed, rawRotSpeed)
         );
         // System.out.println(rawXSpeed + " " + rawYSpeed + " " + rawRotSpeed);
         SwerveDriveKinematics.desaturateWheelSpeeds(states, SwerveConstants.kMaxWheelSpeed);
-
-        // states[0] = SwerveModuleState.optimize(states[0], frontLeftModule.getDesiredSwerveState().angle);
-        // states[1] = SwerveModuleState.optimize(states[1], frontRightModule.getDesiredSwerveState().angle);
-        // states[2] = SwerveModuleState.optimize(states[2], backLeftModule.getDesiredSwerveState().angle);
-        // states[3] = SwerveModuleState.optimize(states[3], backRightModule.getDesiredSwerveState().angle);
-        
-        // states[0].angle = states[0].angle.plus(Rotation2d.fromDegrees(-90));
-        // states[1].angle = states[1].angle.plus(Rotation2d.fromDegrees(-90));
-        // states[2].angle = states[2].angle.plus(Rotation2d.fromDegrees(-90));
-        // states[3].angle = states[3].angle.plus(Rotation2d.fromDegrees(-90));
-        
-        // states[0].angle = states[0].angle.plus(Rotation2d.fromDegrees(0));
-        // states[1].angle = states[1].angle.plus(Rotation2d.fromDegrees(90));
-        // states[2].angle = states[2].angle.plus(Rotation2d.fromDegrees(0));
-        // states[3].angle = states[3].angle.plus(Rotation2d.fromDegrees(180));
 
         frontLeftLigament.setLength(states[0].speedMetersPerSecond / 6);
         frontRightLigament.setLength(states[1].speedMetersPerSecond / 6);
@@ -222,10 +229,6 @@ public class SwerveDrive extends SubsystemBase {
         backLeftLigament.setAngle(states[2].angle.getDegrees() + 90);
         backRightLigament.setAngle(states[3].angle.getDegrees() + 180);
         
-        // frontLeftDirLigament.setLength(Math.signum(states[0].speedMetersPerSecond) * 0.4);
-        // frontRightDirLigament.setLength(Math.signum(states[1].speedMetersPerSecond) * 0.4);
-        // backLeftDirLigament.setLength(Math.signum(states[2].speedMetersPerSecond) * 0.4);
-        // backRightDirLigament.setLength(Math.signum(states[3].speedMetersPerSecond) * 0.4);
         frontLeftDirLigament.setAngle(states[0].angle.getDegrees());
         frontRightDirLigament.setAngle(states[1].angle.getDegrees() + 90);
         backLeftDirLigament.setAngle(states[2].angle.getDegrees() + 90);
@@ -260,11 +263,26 @@ public class SwerveDrive extends SubsystemBase {
         });
     }
 
+    public Command runZeroGyro() {
+        return runOnce(() -> {
+            gyro.reset();
+        });
+    }
+
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("frontLeftSwerveTurnPos", frontLeftModule.getTurnPos());
         SmartDashboard.putNumber("frontLeftPositionSetpointRad", frontLeftModule.getDesiredSwerveState().angle.getRadians());
-        frontLeftModule.periodic();
+
+        // frontLeftModule.updateConstants();
+        // frontRightModule.updateConstants();
+        // backLeftModule.updateConstants();
+        // backRightModule.updateConstants();
+
         frontLeftModule.putInfo("frontLeft");
+        frontRightModule.putInfo("frontRight");
+        backLeftModule.putInfo("backLeft");
+        backRightModule.putInfo("backRight");
+
+        SmartDashboard.putNumber("Gyro", gyro.getAngle());
     }
 }

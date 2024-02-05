@@ -33,6 +33,9 @@ public final class Constants {
 
     public static final int kPigeonID = 9;
 
+    public static final double kSRXMagEncoderCPR = 4096; // may be 1024
+    public static final double kTurnPositionConversionFactor = Units.rotationsToRadians(1 / kSRXMagEncoderCPR);
+
     public static final double kDriveGearRatio = 6.75 / 1; // rotations on input per rotations on output
     public static final double kInternalNEOEncoderCPR = 42 / 1; // counts on encoder per rotation
     public static final double kWheelMetersPerRotation = Units.inchesToMeters(Math.PI * 4); // meters per rotation (wheel circumference)
@@ -40,10 +43,10 @@ public final class Constants {
     public static final double kDrivePositionConversionFactor = kWheelMetersPerRotation / (kDriveGearRatio * kInternalNEOEncoderCPR);
 
     public static final double kMaxWheelSpeed = 6; // m/s
-    public static final double kMagVelLimit = 4; // m/s
+    public static final double kMagVelLimit = 3; // m/s
     public static final double kDirVelLimit = 10; // rad/s
     public static final double kRotVelLimit = 6; // rad/s
-    public static final double kMagAccelLimit = 20; // m/s^2
+    public static final double kMagAccelLimit = 15; // m/s^2
     public static final double kRotAccelLimit = 30; // rad/s^2
 
     public static final double kDefaultTestTurn = 0;
@@ -62,7 +65,7 @@ public final class Constants {
   }
 
   public static class SwerveModuleConstants {
-    public static final double kDefaultP = 0;
+    public static final double kDefaultP = 0.01;
     public static final double kDefaultI = 0; // 0.0001
     public static final double kDefaultD = 0;
     public static final double kDefaultS = 0;
@@ -102,5 +105,6 @@ public final class Constants {
 
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
+    public static final int kAuxControllerPort = 1;
   }
 }
