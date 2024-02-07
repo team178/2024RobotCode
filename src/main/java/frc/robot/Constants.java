@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Preferences;
+import frc.robot.util.SparkPIDConstants;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -16,7 +17,7 @@ import edu.wpi.first.wpilibj.Preferences;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  public static class SwerveConstants {
+  public static class SwerveConstants { // all swerve on CAN ID range 1-9
     public static final double kWheelDistanceMeters = Units.inchesToMeters(19.625); //! to be set
     
     public static final int kFrontLeftDrivingCanID = 1;
@@ -31,7 +32,7 @@ public final class Constants {
     public static final int kBackRightDrivingCanID = 3;
     public static final int kBackRightTurningCanID = 7;
 
-    public static final int kPigeonID = 9;
+    public static final int kPigeonCanID = 9;
 
     public static final double kSRXMagEncoderCPR = 4096; // may be 1024
     public static final double kTurnPositionConversionFactor = Units.rotationsToRadians(1 / kSRXMagEncoderCPR);
@@ -65,42 +66,44 @@ public final class Constants {
   }
 
   public static class SwerveModuleConstants {
-    public static final double kDefaultP = 0.01;
-    public static final double kDefaultI = 0; // 0.0001
-    public static final double kDefaultD = 0;
-    public static final double kDefaultS = 0;
-    public static final double kDefaultV = 0.145;
+    public static final SparkPIDConstants kDrivePIDConstants = new SparkPIDConstants(
+      "SwerveModuleDrive",
+      0.01,
+      0, // 0.0001
+      0,
+      0.145
+    );
+    // public static final double kDefaultS = 0;
 
-    public static final double kDefaultTurnP = 0.2;
-    public static final double kDefaultTurnI = 0;
-    public static final double kDefaultTurnD = 0;
+    public static final SparkPIDConstants kTurnPIDConstants = new SparkPIDConstants(
+      "SwerveModuleTurn",
+      0.2,
+      0, // 0.0001
+      0,
+      0.145
+    );
 
     public static final double kTurnRatio = 12.8 / 1; // only use when using internal encoder
+  }
 
-    public static void initSwerveModulePreferences() {
-      Preferences.initDouble("kSwerveModuleDriveP", kDefaultP);
-      Preferences.initDouble("kSwerveModuleDriveI", kDefaultI);
-      Preferences.initDouble("kSwerveModuleDriveD", kDefaultD);
-      Preferences.initDouble("kSwerveModuleDriveS", kDefaultS);
-      Preferences.initDouble("kSwerveModuleDriveV", kDefaultV);
+  public static class ShooterConstants { // CAN ID range 10-14, TBD
+    public static final int kWristMotorCanID = 10;
+    public static final int kWristMotorFollowerCanID = 11;
+    public static final int kIndexMotorCanID = 12;
+    public static final int kShooterLowerMotorCanID = 13;
+    public static final int kShooterUpperMotorCanID = 14;
 
-      Preferences.initDouble("kSwerveModuleTurnP", kDefaultTurnP);
-      Preferences.initDouble("kSwerveModuleTurnI", kDefaultTurnI);
-      Preferences.initDouble("kSwerveModuleTurnD", kDefaultTurnD);
-      System.out.println("Swerve module preferences initialized");
-    }
+    public static final int kUltrasonicPingDIOPort = 0;
+    public static final int kUltrasonicEchoDIOPort = 1;
+    public static final int kMedianFilterSize = 5;
+  }
 
-    public static void resetSwerveModulePreferences() {
-      Preferences.setDouble("kSwerveModuleDriveP", kDefaultP);
-      Preferences.setDouble("kSwerveModuleDriveI", kDefaultI);
-      Preferences.setDouble("kSwerveModuleDriveD", kDefaultD);
-      Preferences.setDouble("kSwerveModuleDriveS", kDefaultS);
-      Preferences.setDouble("kSwerveModuleDriveV", kDefaultV);
+  public static class IntakeConstants { // CAN ID range 15-19, TBD
+    
+  }
 
-      Preferences.setDouble("kSwerveModuleTurnP", kDefaultTurnP);
-      Preferences.setDouble("kSwerveModuleTurnI", kDefaultTurnI);
-      Preferences.setDouble("kSwerveModuleTurnD", kDefaultTurnD);
-    }
+  public static class ClimberConstants { // CAN ID range 20+, TBD
+
   }
 
   public static class OperatorConstants {

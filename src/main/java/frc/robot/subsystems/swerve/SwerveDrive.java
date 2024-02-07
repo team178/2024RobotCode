@@ -12,6 +12,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
@@ -57,6 +58,7 @@ public class SwerveDrive extends SubsystemBase {
         initComponents();
         initMathModels();
         initSimulations();
+        NetworkTableInstance.getDefault().getTable("Test table").getEntry("test entry").setDefaultDouble(-1);
     }
 
     private void initComponents() {
@@ -67,15 +69,15 @@ public class SwerveDrive extends SubsystemBase {
             "0 Front Left",
             SwerveConstants.kFrontLeftTurningCanID,
             SwerveConstants.kFrontLeftDrivingCanID,
-            new Rotation2d(0),
-            false
+            new Rotation2d(5.58),
+            true
         ); //WHEN POWERING ROBOT, LINE UP SWERVE MODULE TO FORWARD, black bolt on RIGHT from FRONT, LEFT from BACK (using internal encoders for now)
         frontRightModule = new SDSSwerveModule(
             "1 Front Right",
             SwerveConstants.kFrontRightTurningCanID,
             SwerveConstants.kFrontRightDrivingCanID,
-            new Rotation2d(0),
-            false
+            new Rotation2d(5.20),
+            true
         );
         backLeftModule = new SDSSwerveModule(
             "2 Back Left",
@@ -92,7 +94,7 @@ public class SwerveDrive extends SubsystemBase {
             false
         );
 
-        gyro = new Pigeon2(SwerveConstants.kPigeonID);
+        gyro = new Pigeon2(SwerveConstants.kPigeonCanID);
         gyro.reset();
     }
 

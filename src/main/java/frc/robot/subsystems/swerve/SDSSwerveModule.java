@@ -21,7 +21,6 @@ import frc.robot.Constants.SwerveConstants;
 import frc.robot.Constants.SwerveModuleConstants;
 
 public class SDSSwerveModule {
-    private static boolean modulePreferencesInitialized = false;
     public static final NetworkTable swerveModulesNT = NetworkTableInstance.getDefault().getTable("Swerve Modules");
 
     private String name;
@@ -46,10 +45,6 @@ public class SDSSwerveModule {
     private SysIdRoutine routine;
 
     public SDSSwerveModule(String name, int turnID, int driveID, Rotation2d angularOffset, boolean useAbsolute) {
-        if(!modulePreferencesInitialized) {
-            SwerveModuleConstants.initSwerveModulePreferences();
-            modulePreferencesInitialized = true;
-        }
         Preferences.initBoolean(name + "Enabled", true);
         this.name = name;
 
@@ -74,18 +69,19 @@ public class SDSSwerveModule {
         turnPIDController = turnMotor.getPIDController();
         drivePIDController = driveMotor.getPIDController();
 
-        turnAbsEncoder.setPositionConversionFactor(SwerveConstants.kTurnPositionConversionFactor);
-        turnPIDController.setP(Preferences.getDouble("kSwerveModuleTurnP", SwerveModuleConstants.kDefaultTurnP));
-        turnPIDController.setI(Preferences.getDouble("kSwerveModuleTurnI", SwerveModuleConstants.kDefaultTurnI));
-        turnPIDController.setD(Preferences.getDouble("kSwerveModuleTurnD", SwerveModuleConstants.kDefaultTurnD));
+        // turnAbsEncoder.setPositionConversionFactor(SwerveConstants.kTurnPositionConversionFactor);
+        turnPIDController.setP(SwerveModuleConstants.kTurnPIDConstants.kP());
+        turnPIDController.setI(SwerveModuleConstants.kTurnPIDConstants.kI());
+        turnPIDController.setD(SwerveModuleConstants.kTurnPIDConstants.kD());
+        turnAbsEncoder.setPositionConversionFactor(4 * Math.PI);
         if(useAbsolute) {
             turnPIDController.setFeedbackDevice(turnAbsEncoder);
         }
 
-        drivePIDController.setP(Preferences.getDouble("kSwerveModuleDriveP", SwerveModuleConstants.kDefaultP));
-        drivePIDController.setI(Preferences.getDouble("kSwerveModuleDriveI", SwerveModuleConstants.kDefaultI));
-        drivePIDController.setD(Preferences.getDouble("kSwerveModuleDriveD", SwerveModuleConstants.kDefaultD));
-        drivePIDController.setFF(Preferences.getDouble("kSwerveModuleDriveV", SwerveModuleConstants.kDefaultV));
+        drivePIDController.setP(SwerveModuleConstants.kDrivePIDConstants.kP());
+        drivePIDController.setI(SwerveModuleConstants.kDrivePIDConstants.kI());
+        drivePIDController.setD(SwerveModuleConstants.kDrivePIDConstants.kD());
+        drivePIDController.setFF(SwerveModuleConstants.kDrivePIDConstants.kV());
         driveEncoder.setPositionConversionFactor(SwerveConstants.kDrivePositionConversionFactor);
         driveEncoder.setVelocityConversionFactor(SwerveConstants.kDriveVelocityConversionFactor);
 
@@ -106,9 +102,9 @@ public class SDSSwerveModule {
 
         moduleNT = swerveModulesNT.getSubTable(name);
         moduleNT.getEntry("turnRelPos").setDefaultDouble(0);
-        moduleNT.getEntry("turnRelAbs").setDefaultDouble(0);
+        moduleNT.getEntry("turnRelVel").setDefaultDouble(0);
         moduleNT.getEntry("turnAbsPos").setDefaultDouble(0);
-        moduleNT.getEntry("turnAbsAbs").setDefaultDouble(0);
+        moduleNT.getEntry("turnAbsVel").setDefaultDouble(0);
         moduleNT.getEntry("driveVel").setDefaultDouble(0);
     }
 
@@ -150,21 +146,21 @@ public class SDSSwerveModule {
     }
 
     public SwerveModulePosition getPosition() {
-        return new SwerveModulePosition(
+        return new SwerveModulePosition( 
             driveEncoder.getPosition(),
             useAbsolute ? Rotation2d.fromRadians(getAbsTurnPos()) : Rotation2d.fromRadians(getRelTurnPos() / 2)
         );
     }
 
     public void updateConstants() {
-        turnPIDController.setP(Preferences.getDouble("kSwerveDriveTurnP", SwerveModuleConstants.kDefaultTurnP));
-        turnPIDController.setI(Preferences.getDouble("kSwerveDriveTurnI", SwerveModuleConstants.kDefaultTurnI));
-        turnPIDController.setD(Preferences.getDouble("kSwerveDriveTurnD", SwerveModuleConstants.kDefaultTurnD));
+        turnPIDController.setP(SwerveModuleConstants.kTurnPIDConstants.kP());
+        turnPIDController.setI(SwerveModuleConstants.kTurnPIDConstants.kI());
+        turnPIDController.setD(SwerveModuleConstants.kTurnPIDConstants.kD());
 
-        drivePIDController.setP(Preferences.getDouble("kSwerveModuleDriveP", SwerveModuleConstants.kDefaultP));
-        drivePIDController.setI(Preferences.getDouble("kSwerveModuleDriveI", SwerveModuleConstants.kDefaultI));
-        drivePIDController.setD(Preferences.getDouble("kSwerveModuleDriveD", SwerveModuleConstants.kDefaultD));
-        drivePIDController.setFF(Preferences.getDouble("kSwerveModuleDriveV", SwerveModuleConstants.kDefaultV));
+        drivePIDController.setP(SwerveModuleConstants.kDrivePIDConstants.kP());
+        drivePIDController.setI(SwerveModuleConstants.kDrivePIDConstants.kI());
+        drivePIDController.setD(SwerveModuleConstants.kDrivePIDConstants.kD());
+        drivePIDController.setFF(SwerveModuleConstants.kDrivePIDConstants.kV());
     }
     
     public void putInfo(String name) {
