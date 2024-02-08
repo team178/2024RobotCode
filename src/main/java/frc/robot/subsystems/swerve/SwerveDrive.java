@@ -69,7 +69,7 @@ public class SwerveDrive extends SubsystemBase {
             "0 Front Left",
             SwerveConstants.kFrontLeftTurningCanID,
             SwerveConstants.kFrontLeftDrivingCanID,
-            new Rotation2d(5.58),
+            new Rotation2d(2.44),
             true
         ); //WHEN POWERING ROBOT, LINE UP SWERVE MODULE TO FORWARD, black bolt on RIGHT from FRONT, LEFT from BACK (using internal encoders for now)
         frontRightModule = new SDSSwerveModule(
@@ -83,15 +83,15 @@ public class SwerveDrive extends SubsystemBase {
             "2 Back Left",
             SwerveConstants.kBackLeftTurningCanID,
             SwerveConstants.kBackLeftDrivingCanID,
-            new Rotation2d(0),
-            false
+            new Rotation2d(4.73),
+            true
         );
         backRightModule = new SDSSwerveModule( // mechanical no work
             "3 Back Right",
             SwerveConstants.kBackRightTurningCanID,
             SwerveConstants.kBackRightDrivingCanID,
-            new Rotation2d(0),
-            false
+            new Rotation2d(4.14),
+            true
         );
 
         gyro = new Pigeon2(SwerveConstants.kPigeonCanID);

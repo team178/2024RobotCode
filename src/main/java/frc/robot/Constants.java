@@ -44,7 +44,7 @@ public final class Constants {
     public static final double kDrivePositionConversionFactor = kWheelMetersPerRotation / (kDriveGearRatio * kInternalNEOEncoderCPR);
 
     public static final double kMaxWheelSpeed = 6; // m/s
-    public static final double kMagVelLimit = 3; // m/s
+    public static final double kMagVelLimit = 2; // m/s
     public static final double kDirVelLimit = 10; // rad/s
     public static final double kRotVelLimit = 6; // rad/s
     public static final double kMagAccelLimit = 15; // m/s^2
