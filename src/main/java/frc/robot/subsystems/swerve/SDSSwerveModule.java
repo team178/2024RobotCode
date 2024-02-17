@@ -73,6 +73,7 @@ public class SDSSwerveModule {
         turnPIDController.setP(SwerveModuleConstants.kTurnPIDConstants.kP());
         turnPIDController.setI(SwerveModuleConstants.kTurnPIDConstants.kI());
         turnPIDController.setD(SwerveModuleConstants.kTurnPIDConstants.kD());
+        turnMotor.setSmartCurrentLimit(10);
         turnAbsEncoder.setPositionConversionFactor(4 * Math.PI);
         if(useAbsolute) {
             turnPIDController.setFeedbackDevice(turnAbsEncoder);
@@ -82,6 +83,7 @@ public class SDSSwerveModule {
         drivePIDController.setI(SwerveModuleConstants.kDrivePIDConstants.kI());
         drivePIDController.setD(SwerveModuleConstants.kDrivePIDConstants.kD());
         drivePIDController.setFF(SwerveModuleConstants.kDrivePIDConstants.kV());
+        driveMotor.setSmartCurrentLimit(20);
         driveEncoder.setPositionConversionFactor(SwerveConstants.kDrivePositionConversionFactor);
         driveEncoder.setVelocityConversionFactor(SwerveConstants.kDriveVelocityConversionFactor);
 
