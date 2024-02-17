@@ -14,5 +14,29 @@
     "properties": {
       "persistent": true
     }
+  },
+  {
+    "name": "/Preferences/1 Front RightEnabled",
+    "type": "boolean",
+    "value": true,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/2 Back LeftEnabled",
+    "type": "boolean",
+    "value": true,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/3 Back RightEnabled",
+    "type": "boolean",
+    "value": true,
+    "properties": {
+      "persistent": true
+    }
   }
 ]
