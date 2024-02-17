@@ -86,6 +86,7 @@ public class SDSSwerveModule {
         driveMotor.setSmartCurrentLimit(20);
         driveEncoder.setPositionConversionFactor(SwerveConstants.kDrivePositionConversionFactor);
         driveEncoder.setVelocityConversionFactor(SwerveConstants.kDriveVelocityConversionFactor);
+        driveEncoder.setPositionConversionFactor(1); // TEMPORARY JUST TO CHECK IF ODOMETRY GOES THE RIGHT WAY
 
         turnPIDController.setPositionPIDWrappingEnabled(true);
         turnPIDController.setPositionPIDWrappingMinInput(0);
@@ -148,7 +149,7 @@ public class SDSSwerveModule {
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition( 
             driveEncoder.getPosition(),
-            useAbsolute ? Rotation2d.fromRadians(getAbsTurnPos()) : Rotation2d.fromRadians(getRelTurnPos() / 2)
+            useAbsolute ? Rotation2d.fromRadians(getAbsTurnPos()).plus(chassisAngularOffset) : Rotation2d.fromRadians(getRelTurnPos() / 2)
         );
     }
 

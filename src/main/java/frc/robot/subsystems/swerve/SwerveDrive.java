@@ -6,11 +6,14 @@ import java.util.function.DoubleSupplier;
 import com.ctre.phoenix6.hardware.Pigeon2;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Preferences;
@@ -36,7 +39,7 @@ public class SwerveDrive extends SubsystemBase {
     private Pigeon2 gyro;
 
     private SwerveDriveKinematics swerveKinematics;
-    private SwerveDriveOdometry swerveOdomentry;
+    private SwerveDrivePoseEstimator swerveOdomentry;
 
     private RateLimiter magnitudeAccelLimiter;
     private RateLimiter directionVelLimiter;
@@ -108,7 +111,12 @@ public class SwerveDrive extends SubsystemBase {
             new Translation2d(SwerveConstants.kWheelDistanceMeters / 2, -SwerveConstants.kWheelDistanceMeters / 2),
             new Translation2d(SwerveConstants.kWheelDistanceMeters / 2, SwerveConstants.kWheelDistanceMeters / 2)
         );
-        // swerveOdomentry = new SwerveDriveOdometry(m_swerveKinematics, Rotation2d.fromDegrees(m_gyro.getAngle()), null);
+        swerveOdomentry = new SwerveDrivePoseEstimator(swerveKinematics, Rotation2d.fromDegrees(gyro.getAngle()), new SwerveModulePosition[]{
+            backLeftModule.getPosition(),
+            backRightModule.getPosition(),
+            frontLeftModule.getPosition(),
+            frontRightModule.getPosition()
+        }, new Pose2d());
     }
 
     private void initSimulations() {
@@ -140,6 +148,8 @@ public class SwerveDrive extends SubsystemBase {
         rightFrame.append(backRightDirLigament.ligament);
 
         field = new Field2d();
+        
+        field.setRobotPose(new Pose2d(1, 1, new Rotation2d(0)));
         
         SmartDashboard.putData("Swerve Visualization", swerveVisualizer);
         SmartDashboard.putData("Field", field);
@@ -283,5 +293,15 @@ public class SwerveDrive extends SubsystemBase {
         backRightModule.putInfo("backRight");
 
         SmartDashboard.putNumber("Gyro", gyro.getAngle());
+
+        swerveOdomentry.update(Rotation2d.fromDegrees(gyro.getAngle()), new SwerveModulePosition[]{
+            backLeftModule.getPosition(),
+            backRightModule.getPosition(),
+            frontLeftModule.getPosition(),
+            frontRightModule.getPosition()
+        });
+        field.setRobotPose(swerveOdomentry.getEstimatedPosition());
+        System.out.println(swerveOdomentry.getEstimatedPosition().getX() + " " + swerveOdomentry.getEstimatedPosition().getY());
+        SmartDashboard.putData(field);
     }
 }
