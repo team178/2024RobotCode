@@ -58,7 +58,6 @@ public class SwerveDrive extends SubsystemBase {
         initComponents();
         initMathModels();
         initSimulations();
-        NetworkTableInstance.getDefault().getTable("Test table").getEntry("test entry").setDefaultDouble(-1);
     }
 
     private void initComponents() {
@@ -164,23 +163,23 @@ public class SwerveDrive extends SubsystemBase {
         // return (90 - (newAngle - oldAngle)) % 180 - 90;
     }
 
-    public Command runDriveInputs(DoubleSupplier rawXSpeed, DoubleSupplier rawYSpeed, DoubleSupplier rawRotSpeed, BooleanSupplier fieldRelative, boolean rateLimited) {
+    public Command runDriveInputs(DoubleSupplier rawXSpeed, DoubleSupplier rawYSpeed, DoubleSupplier rawRotSpeed, BooleanSupplier robotCentric, boolean rateLimited) {
         return run(() -> {
             double adjXSpeed = MathUtil.applyDeadband(-rawXSpeed.getAsDouble(), 0.2);
             double adjYSpeed = MathUtil.applyDeadband(-rawYSpeed.getAsDouble(), 0.2);
             double adjRotSpeed = MathUtil.applyDeadband(rawRotSpeed.getAsDouble(), 0.2);
 
-            adjustedDriveInputs(adjXSpeed, adjYSpeed, adjRotSpeed, fieldRelative.getAsBoolean(), rateLimited);
+            adjustedDriveInputs(adjXSpeed, adjYSpeed, adjRotSpeed, robotCentric.getAsBoolean(), rateLimited);
         });
     }
 
-    public void adjustedDriveInputs(double adjXSpeed, double adjYSpeed, double adjRotSpeed, boolean fieldRelative, boolean rateLimited) {
+    public void adjustedDriveInputs(double adjXSpeed, double adjYSpeed, double adjRotSpeed, boolean robotCentric, boolean rateLimited) {
         if(!rateLimited) {
             rawDriveInputs(
                 adjXSpeed * SwerveConstants.kMagVelLimit,
                 adjYSpeed * SwerveConstants.kMagVelLimit,
                 adjRotSpeed * SwerveConstants.kRotVelLimit,
-                fieldRelative
+                robotCentric
             );
             return;
         }
@@ -211,11 +210,11 @@ public class SwerveDrive extends SubsystemBase {
         ySpeed = MathUtil.applyDeadband(ySpeed, 0.01);
         rotSpeed = MathUtil.applyDeadband(rotSpeed, 0.01);
 
-        rawDriveInputs(xSpeed, ySpeed, rotSpeed, fieldRelative);
+        rawDriveInputs(xSpeed, ySpeed, rotSpeed, robotCentric);
     }
 
-    public void rawDriveInputs(double rawXSpeed, double rawYSpeed, double rawRotSpeed, boolean fieldRelative) {
-        SwerveModuleState[] states = swerveKinematics.toSwerveModuleStates(fieldRelative ?
+    public void rawDriveInputs(double rawXSpeed, double rawYSpeed, double rawRotSpeed, boolean robotCentric) {
+        SwerveModuleState[] states = swerveKinematics.toSwerveModuleStates(!robotCentric ?
             ChassisSpeeds.fromFieldRelativeSpeeds(rawXSpeed, rawYSpeed, rawRotSpeed, Rotation2d.fromDegrees(-gyro.getAngle())) : // see if gyro is done correctly 
             new ChassisSpeeds(rawXSpeed, rawYSpeed, rawRotSpeed)
         );
@@ -236,8 +235,8 @@ public class SwerveDrive extends SubsystemBase {
         backLeftDirLigament.setAngle(states[2].angle.getDegrees() + 90);
         backRightDirLigament.setAngle(states[3].angle.getDegrees() + 180);
 
-        System.out.print(states[0].angle.getDegrees() + " " + states[1].angle.getDegrees() + " " + states[2].angle.getDegrees() + " " + states[3].angle.getDegrees());
-        System.out.println("  " + states[0].speedMetersPerSecond + " " + states[1].speedMetersPerSecond + " " + states[2].speedMetersPerSecond + " " + states[3].speedMetersPerSecond);
+        // System.out.print(states[0].angle.getDegrees() + " " + states[1].angle.getDegrees() + " " + states[2].angle.getDegrees() + " " + states[3].angle.getDegrees());
+        // System.out.println("  " + states[0].speedMetersPerSecond + " " + states[1].speedMetersPerSecond + " " + states[2].speedMetersPerSecond + " " + states[3].speedMetersPerSecond);
         frontLeftModule.setDesiredSwerveState(states[0]);
         frontRightModule.setDesiredSwerveState(states[1]);
         backLeftModule.setDesiredSwerveState(states[2]);
@@ -273,8 +272,6 @@ public class SwerveDrive extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("frontLeftPositionSetpointRad", frontLeftModule.getDesiredSwerveState().angle.getRadians());
-
         // frontLeftModule.updateConstants();
         // frontRightModule.updateConstants();
         // backLeftModule.updateConstants();
