@@ -15,6 +15,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -31,6 +32,12 @@ import frc.robot.util.MechanismLigament2dWrapper;
 import frc.robot.util.RateLimiter;
 
 public class SwerveDrive extends SubsystemBase {
+    public static final NetworkTable swerveDriveNT = NetworkTableInstance.getDefault().getTable("Swerve Drive");
+    public static final NetworkTable swerveDriveCalculationsNT = swerveDriveNT.getSubTable("00 Calculations");
+    public static final NetworkTable swerveDriveFrontLeftNT = swerveDriveNT.getSubTable("10 Desired Front Left");
+    public static final NetworkTable swerveDriveFrontRightNT = swerveDriveNT.getSubTable("11 Desired Front Right");
+    public static final NetworkTable swerveDriveBackLeftNT = swerveDriveNT.getSubTable("12 Desired Back Left");
+    public static final NetworkTable swerveDriveBackRightNT = swerveDriveNT.getSubTable("13 Desired Back Right");
     private SDSSwerveModule frontLeftModule;
     private SDSSwerveModule frontRightModule;
     private SDSSwerveModule backLeftModule;
@@ -64,35 +71,34 @@ public class SwerveDrive extends SubsystemBase {
     }
 
     private void initComponents() {
-        // horns face forward
-        // battery on left
         SwerveConstants.initSwerveDrivePreferences();
+         //WHEN POWERING ROBOT(in relative encoder use), LINE UP SWERVE MODULE TO FORWARD, black bolt on RIGHT from FRONT, LEFT from BACK
         frontLeftModule = new SDSSwerveModule(
             "0 Front Left",
             SwerveConstants.kFrontLeftTurningCanID,
             SwerveConstants.kFrontLeftDrivingCanID,
-            new Rotation2d(2.44),
+            new Rotation2d(0.87),
             true
-        ); //WHEN POWERING ROBOT, LINE UP SWERVE MODULE TO FORWARD, black bolt on RIGHT from FRONT, LEFT from BACK (using internal encoders for now)
+        );
         frontRightModule = new SDSSwerveModule(
             "1 Front Right",
             SwerveConstants.kFrontRightTurningCanID,
             SwerveConstants.kFrontRightDrivingCanID,
-            new Rotation2d(5.20),
+            new Rotation2d(3.63),
             true
         );
         backLeftModule = new SDSSwerveModule(
             "2 Back Left",
             SwerveConstants.kBackLeftTurningCanID,
             SwerveConstants.kBackLeftDrivingCanID,
-            new Rotation2d(4.73),
+            new Rotation2d(3.16),
             true
         );
-        backRightModule = new SDSSwerveModule( // mechanical no work
+        backRightModule = new SDSSwerveModule(
             "3 Back Right",
             SwerveConstants.kBackRightTurningCanID,
             SwerveConstants.kBackRightDrivingCanID,
-            new Rotation2d(4.14),
+            new Rotation2d(2.57),
             true
         );
 
@@ -106,10 +112,10 @@ public class SwerveDrive extends SubsystemBase {
         rotationAccelLimiter = new RateLimiter(SwerveConstants.kRotAccelLimit);
 
         swerveKinematics = new SwerveDriveKinematics( //! make sure these are the right order, FRONT left right, BACK left right
+            new Translation2d(-SwerveConstants.kWheelDistanceMeters / 2, SwerveConstants.kWheelDistanceMeters / 2),
+            new Translation2d(SwerveConstants.kWheelDistanceMeters / 2, SwerveConstants.kWheelDistanceMeters / 2), // I REALLY DONT KNOW ANYMORE
             new Translation2d(-SwerveConstants.kWheelDistanceMeters / 2, -SwerveConstants.kWheelDistanceMeters / 2),
-            new Translation2d(-SwerveConstants.kWheelDistanceMeters / 2, SwerveConstants.kWheelDistanceMeters / 2), // I REALLY DONT KNOW ANYMORE
-            new Translation2d(SwerveConstants.kWheelDistanceMeters / 2, -SwerveConstants.kWheelDistanceMeters / 2),
-            new Translation2d(SwerveConstants.kWheelDistanceMeters / 2, SwerveConstants.kWheelDistanceMeters / 2)
+            new Translation2d(SwerveConstants.kWheelDistanceMeters / 2, -SwerveConstants.kWheelDistanceMeters / 2)
         );
         swerveOdomentry = new SwerveDrivePoseEstimator(swerveKinematics, Rotation2d.fromDegrees(gyro.getAngle()), new SwerveModulePosition[]{
             backLeftModule.getPosition(),
@@ -175,9 +181,9 @@ public class SwerveDrive extends SubsystemBase {
 
     public Command runDriveInputs(DoubleSupplier rawXSpeed, DoubleSupplier rawYSpeed, DoubleSupplier rawRotSpeed, BooleanSupplier robotCentric, boolean rateLimited) {
         return run(() -> {
-            double adjXSpeed = MathUtil.applyDeadband(-rawXSpeed.getAsDouble(), 0.2);
-            double adjYSpeed = MathUtil.applyDeadband(-rawYSpeed.getAsDouble(), 0.2);
-            double adjRotSpeed = MathUtil.applyDeadband(rawRotSpeed.getAsDouble(), 0.2);
+            double adjXSpeed = MathUtil.applyDeadband(rawXSpeed.getAsDouble(), 0.2);
+            double adjYSpeed = MathUtil.applyDeadband(rawYSpeed.getAsDouble(), 0.2);
+            double adjRotSpeed = MathUtil.applyDeadband(-rawRotSpeed.getAsDouble(), 0.2);
 
             adjustedDriveInputs(adjXSpeed, adjYSpeed, adjRotSpeed, robotCentric.getAsBoolean(), rateLimited);
         });
@@ -211,10 +217,15 @@ public class SwerveDrive extends SubsystemBase {
         
         double xSpeed = magSpeed * Math.cos(dir);
         double ySpeed = magSpeed * Math.sin(dir);
-        // System.out.println("e " + xSpeed + " " + ySpeed);
         double rotSpeed = rotationAccelLimiter.calculate(adjRotSpeed * SwerveConstants.kRotVelLimit);
 
-        // System.out.print(dir + " " + magSpeed + "  ");
+        // System.out.print(dir + " " + magSpeed + "   ");
+        swerveDriveCalculationsNT.getEntry("dir").setDouble(dir);
+        swerveDriveCalculationsNT.getEntry("magSpeed").setDouble(magSpeed);
+        // System.out.print(xSpeed + " " + ySpeed + " ");
+        swerveDriveCalculationsNT.getEntry("xSpeed").setDouble(xSpeed);
+        swerveDriveCalculationsNT.getEntry("ySpeed").setDouble(ySpeed);
+        swerveDriveCalculationsNT.getEntry("rotSpeed").setDouble(rotSpeed);
 
         xSpeed = MathUtil.applyDeadband(xSpeed, 0.01);
         ySpeed = MathUtil.applyDeadband(ySpeed, 0.01);
@@ -235,18 +246,28 @@ public class SwerveDrive extends SubsystemBase {
         frontRightLigament.setLength(states[1].speedMetersPerSecond / 6);
         backLeftLigament.setLength(states[2].speedMetersPerSecond / 6);
         backRightLigament.setLength(states[3].speedMetersPerSecond / 6);
-        frontLeftLigament.setAngle(states[0].angle.getDegrees());
-        frontRightLigament.setAngle(states[1].angle.getDegrees() + 90);
-        backLeftLigament.setAngle(states[2].angle.getDegrees() + 90);
-        backRightLigament.setAngle(states[3].angle.getDegrees() + 180);
+        frontLeftLigament.setAngle(states[0].angle.getDegrees() - 90);
+        frontRightLigament.setAngle(states[1].angle.getDegrees());
+        backLeftLigament.setAngle(states[2].angle.getDegrees());
+        backRightLigament.setAngle(states[3].angle.getDegrees() + 90);
         
-        frontLeftDirLigament.setAngle(states[0].angle.getDegrees());
-        frontRightDirLigament.setAngle(states[1].angle.getDegrees() + 90);
-        backLeftDirLigament.setAngle(states[2].angle.getDegrees() + 90);
-        backRightDirLigament.setAngle(states[3].angle.getDegrees() + 180);
+        frontLeftDirLigament.setAngle(states[0].angle.getDegrees() - 90);
+        frontRightDirLigament.setAngle(states[1].angle.getDegrees());
+        backLeftDirLigament.setAngle(states[2].angle.getDegrees());
+        backRightDirLigament.setAngle(states[3].angle.getDegrees() + 90);
 
         // System.out.print(states[0].angle.getDegrees() + " " + states[1].angle.getDegrees() + " " + states[2].angle.getDegrees() + " " + states[3].angle.getDegrees());
         // System.out.println("  " + states[0].speedMetersPerSecond + " " + states[1].speedMetersPerSecond + " " + states[2].speedMetersPerSecond + " " + states[3].speedMetersPerSecond);
+        
+        swerveDriveFrontLeftNT.getEntry("angle").setDouble(states[0].angle.getDegrees());
+        swerveDriveFrontLeftNT.getEntry("speed").setDouble(states[0].speedMetersPerSecond);
+        swerveDriveFrontRightNT.getEntry("angle").setDouble(states[1].angle.getDegrees());
+        swerveDriveFrontRightNT.getEntry("speed").setDouble(states[1].speedMetersPerSecond);
+        swerveDriveBackLeftNT.getEntry("angle").setDouble(states[2].angle.getDegrees());
+        swerveDriveBackLeftNT.getEntry("speed").setDouble(states[2].speedMetersPerSecond);
+        swerveDriveBackRightNT.getEntry("angle").setDouble(states[3].angle.getDegrees());
+        swerveDriveBackRightNT.getEntry("speed").setDouble(states[3].speedMetersPerSecond);
+
         frontLeftModule.setDesiredSwerveState(states[0]);
         frontRightModule.setDesiredSwerveState(states[1]);
         backLeftModule.setDesiredSwerveState(states[2]);
@@ -301,7 +322,7 @@ public class SwerveDrive extends SubsystemBase {
             frontRightModule.getPosition()
         });
         field.setRobotPose(swerveOdomentry.getEstimatedPosition());
-        System.out.println(swerveOdomentry.getEstimatedPosition().getX() + " " + swerveOdomentry.getEstimatedPosition().getY());
+        // System.out.println(swerveOdomentry.getEstimatedPosition().getX() + " " + swerveOdomentry.getEstimatedPosition().getY());
         SmartDashboard.putData(field);
     }
 }

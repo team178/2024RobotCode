@@ -12,6 +12,7 @@ import java.util.function.BooleanSupplier;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.util.WPILibVersion;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -41,8 +42,8 @@ public class RobotContainer {
     driverController.y().onTrue(swerveDrive.runZeroGyro());
     BooleanSupplier leftBumperSupplier = driverController.leftBumper()::getAsBoolean;
     swerveDrive.setDefaultCommand(swerveDrive.runDriveInputs(
-      driverController::getLeftY,
       driverController::getLeftX,
+      driverController::getLeftY,
       driverController::getRightX, // use in real robot
       // altController::getLeftX, //use in simulation
       leftBumperSupplier,
