@@ -5,6 +5,7 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.swerve.SwerveDrive;
 
 import java.util.function.BooleanSupplier;
@@ -21,11 +22,13 @@ public class RobotContainer {
   private final CommandXboxController driverController;
   private final CommandXboxController altController;
   private final SwerveDrive swerveDrive;
+  private final Shooter shooter;
 
   public RobotContainer() {
     Preferences.removeAll();
     
     swerveDrive = new SwerveDrive();
+    shooter = new Shooter();
 
     driverController = new CommandXboxController(OperatorConstants.kDriverControllerPort);
     altController = new CommandXboxController(OperatorConstants.kAuxControllerPort);
@@ -48,6 +51,10 @@ public class RobotContainer {
       leftBumperSupplier,
       true
     ));
+    shooter.setDefaultCommand(shooter.runAll(
+      driverController::getRightY,
+      driverController::getLeftTriggerAxis,
+      driverController::getRightTriggerAxis));
   }
 
   public Command getAutonomousCommand() {

@@ -1,5 +1,7 @@
 package frc.robot.subsystems.shooter;
 
+import java.util.function.DoubleSupplier;
+
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkAbsoluteEncoder;
 import com.revrobotics.CANSparkBase.IdleMode;
@@ -31,30 +33,30 @@ public class Shooter extends SubsystemBase {
     private MotorFF wristFF;
     
     public Shooter() {
-        wristMotor = new CANSparkMax(ShooterConstants.kWristMotorCanID, MotorType.kBrushless);
-        wristMotorFollower = new CANSparkMax(ShooterConstants.kWristMotorFollowerCanID, MotorType.kBrushless);
+        // wristMotor = new CANSparkMax(ShooterConstants.kWristMotorCanID, MotorType.kBrushless);
+        // wristMotorFollower = new CANSparkMax(ShooterConstants.kWristMotorFollowerCanID, MotorType.kBrushless);
         indexMotor = new CANSparkMax(ShooterConstants.kIndexMotorCanID, MotorType.kBrushless);
         shooterLowerMotor = new CANSparkMax(ShooterConstants.kShooterLowerMotorCanID, MotorType.kBrushless);
         shooterUpperMotor = new CANSparkMax(ShooterConstants.kShooterUpperMotorCanID, MotorType.kBrushless);
 
-        ultrasonic = new Ultrasonic(ShooterConstants.kUltrasonicEchoDIOPort, ShooterConstants.kUltrasonicEchoDIOPort);
-        ultrasonicFilter = new MedianFilter(ShooterConstants.kMedianFilterSize);
+        // ultrasonic = new Ultrasonic(ShooterConstants.kUltrasonicEchoDIOPort, ShooterConstants.kUltrasonicEchoDIOPort);
+        // ultrasonicFilter = new MedianFilter(ShooterConstants.kMedianFilterSize);
 
-        wristEncoder = wristMotor.getAbsoluteEncoder(Type.kDutyCycle);
+        // wristEncoder = wristMotor.getAbsoluteEncoder(Type.kDutyCycle);
 
-        wristMotor.restoreFactoryDefaults();
-        wristMotorFollower.restoreFactoryDefaults();
+        // wristMotor.restoreFactoryDefaults();
+        // wristMotorFollower.restoreFactoryDefaults();
         indexMotor.restoreFactoryDefaults();
         shooterLowerMotor.restoreFactoryDefaults();
         shooterUpperMotor.restoreFactoryDefaults();
 
-        wristMotor.setIdleMode(IdleMode.kBrake);
-        wristMotorFollower.setIdleMode(IdleMode.kBrake);
+        // wristMotor.setIdleMode(IdleMode.kBrake);
+        // wristMotorFollower.setIdleMode(IdleMode.kBrake);
         indexMotor.setIdleMode(IdleMode.kBrake);
         shooterLowerMotor.setIdleMode(IdleMode.kBrake);
         shooterUpperMotor.setIdleMode(IdleMode.kBrake);
 
-        wristMotorFollower.follow(wristMotor);
+        // wristMotorFollower.follow(wristMotor);
     }
 
     public void setIndexVolts(double volts) {
@@ -75,6 +77,19 @@ public class Shooter extends SubsystemBase {
     public Command runShooter(double volts) {
         return runOnce(() -> {
             setShootVolts(volts);
+        });
+    }
+
+    public Command runAll(DoubleSupplier index, DoubleSupplier lower, DoubleSupplier upper) {
+        return run(() -> {
+            double ind = index.getAsDouble() * 5;
+            double low = (lower.getAsDouble()) * 15;
+            double up = (upper.getAsDouble()) * 15;
+
+            indexMotor.setVoltage(ind);
+            shooterLowerMotor.setVoltage(low);
+            shooterUpperMotor.setVoltage(up);
+            System.out.println("the" + ind + " " + low + " " + up);
         });
     }
 
