@@ -301,7 +301,7 @@ public class SwerveDrive extends SubsystemBase {
             frontRightModule.getPosition()
         });
         field.setRobotPose(swerveOdomentry.getEstimatedPosition());
-        System.out.println(swerveOdomentry.getEstimatedPosition().getX() + " " + swerveOdomentry.getEstimatedPosition().getY());
+        // System.out.println(swerveOdomentry.getEstimatedPosition().getX() + " " + swerveOdomentry.getEstimatedPosition().getY());
         SmartDashboard.putData(field);
     }
 }

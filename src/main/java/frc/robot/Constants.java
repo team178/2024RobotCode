@@ -87,8 +87,7 @@ public final class Constants {
   }
 
   public static class ShooterConstants { // CAN ID range 10-14, TBD
-    public static final int kWristMotorCanID = 10;
-    public static final int kWristMotorFollowerCanID = 11;
+    public static final int kWristMotorCanID = 11;
     public static final int kIndexMotorCanID = 12;
     public static final int kShooterLowerMotorCanID = 13;
     public static final int kShooterUpperMotorCanID = 14;

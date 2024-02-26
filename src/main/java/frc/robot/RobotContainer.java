@@ -39,10 +39,13 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    driverController.a().whileTrue(swerveDrive.runTestDrive());
-    driverController.a().onFalse(swerveDrive.runStopDrive());
+    // driverController.a().whileTrue(swerveDrive.runTestDrive());
+    // driverController.a().onFalse(swerveDrive.runStopDrive());
     driverController.y().onTrue(swerveDrive.runZeroGyro());
     BooleanSupplier leftBumperSupplier = driverController.leftBumper()::getAsBoolean;
+    BooleanSupplier altForwardSupplier = altController.leftStick()::getAsBoolean;
+    BooleanSupplier altBackwardSupplier = altController.rightStick()::getAsBoolean;
+    BooleanSupplier altIndexSupplier = altController.y()::getAsBoolean;
     swerveDrive.setDefaultCommand(swerveDrive.runDriveInputs(
       driverController::getLeftY,
       driverController::getLeftX,
@@ -52,9 +55,9 @@ public class RobotContainer {
       true
     ));
     shooter.setDefaultCommand(shooter.runAll(
-      driverController::getRightY,
-      driverController::getLeftTriggerAxis,
-      driverController::getRightTriggerAxis));
+      altForwardSupplier,
+      altBackwardSupplier,
+      altIndexSupplier));
   }
 
   public Command getAutonomousCommand() {
