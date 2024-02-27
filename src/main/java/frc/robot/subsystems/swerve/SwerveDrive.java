@@ -209,7 +209,7 @@ public class SwerveDrive extends SubsystemBase {
         double dir = directionVelLimiter.getPrevVal();
         if(adjXSpeed != 0 || adjYSpeed != 0) {
             // if(Math.abs(prevDir - rawDir) > Math.PI)
-            directionVelLimiter.angleCalculate(rawDir);
+            dir = directionVelLimiter.angleCalculate(rawDir);
             magSpeed = magnitudeAccelLimiter.calculate(rawMagSpeed * swerveAngleDifference(rawDir, directionVelLimiter.getPrevVal()).speedMetersPerSecond);
         } else {
             magSpeed = magnitudeAccelLimiter.calculate(rawMagSpeed);
