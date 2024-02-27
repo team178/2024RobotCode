@@ -34,6 +34,8 @@ public class Shooter extends SubsystemBase {
 
     private PIDController wristPID;
     private MotorFF wristFF;
+
+    private ShooterPosition shooterPosition;
     
     public Shooter() {
         wristMotor = new CANSparkMax(ShooterConstants.kWristMotorCanID, MotorType.kBrushless);
@@ -59,6 +61,20 @@ public class Shooter extends SubsystemBase {
         shooterUpperMotor.setIdleMode(IdleMode.kBrake);
 
         wristAbsEnc = new DutyCycleEncoder(0);
+
+        wristPID = new PIDController(
+            ShooterConstants.kWristPIDConstants.kP(),
+            ShooterConstants.kWristPIDConstants.kI(), 
+            ShooterConstants.kWristPIDConstants.kD() 
+        );
+
+        wristFF = new MotorFF(
+            0,
+            ShooterConstants.kWristPIDConstants.kV(), // actually kG
+            0
+        );
+        shooterPosition = ShooterPosition.UP;
+        
     }
 
     public void setIndexVolts(double volts) {
@@ -68,6 +84,15 @@ public class Shooter extends SubsystemBase {
     public void setShootVolts(double volts) {
         shooterLowerMotor.setVoltage(volts);
         shooterUpperMotor.setVoltage(-volts);
+    }
+
+    public void setWristPosition(ShooterPosition position) {
+        shooterPosition = position;
+        wristPID.setSetpoint(position.position);
+    }
+    
+    public double getWristPostition() {
+        return wristEncoder.getPosition();
     }
 
     public Command runIndex(double volts) {
@@ -82,16 +107,31 @@ public class Shooter extends SubsystemBase {
         });
     }
 
-    public Command runAll(BooleanSupplier forward, BooleanSupplier backward, BooleanSupplier index) {
+    public Command runAll(
+        BooleanSupplier forward, BooleanSupplier backward,
+        BooleanSupplier index,
+        BooleanSupplier flat, BooleanSupplier speaker, BooleanSupplier amp, BooleanSupplier up) {
         return run(() -> {
             double ind = index.getAsBoolean() ? -6 : 0;
-            double low = forward.getAsBoolean() ? -20 : (backward.getAsBoolean() ? 20 : 0);
-            double up = forward.getAsBoolean() ? 20 : (backward.getAsBoolean() ? -20 : 0);
+            double shoot = forward.getAsBoolean() ? -20 : (backward.getAsBoolean() ? 20 : 0);
 
-            indexMotor.setVoltage(ind);
-            shooterLowerMotor.setVoltage(low);
-            shooterUpperMotor.setVoltage(up);
-            System.out.println("the" + ind + " " + low + " " + up);
+            runIndex(ind);
+            setShootVolts(shoot);
+
+            ShooterPosition newPosition = shooterPosition;
+            if(flat.getAsBoolean()) {
+                shooterPosition = ShooterPosition.FLAT;
+            } else if(speaker.getAsBoolean()) {
+                shooterPosition = ShooterPosition.SPEAKER;
+            } else if(amp.getAsBoolean()) {
+                shooterPosition = ShooterPosition.AMP;
+            } else if(up.getAsBoolean()) {
+                shooterPosition = ShooterPosition.UP;
+            }
+            shooterPosition = newPosition;
+            setWristPosition(newPosition);
+
+            System.out.println("the" + ind + " " + shoot);
         });
     }
 
@@ -117,5 +157,8 @@ public class Shooter extends SubsystemBase {
     public void periodic() {
         SmartDashboard.putNumber("armPos", wristEncoder.getPosition());
         SmartDashboard.putNumber("armPosA", wristAbsEnc.getAbsolutePosition());
+
+        double wristPIDOutput = wristPID.calculate(getWristPostition());
+        double wristFFOutput = wristFF.calculate(wristPID.getSetpoint(), 0);
     }
 }

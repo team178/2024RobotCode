@@ -42,10 +42,13 @@ public class RobotContainer {
     // driverController.a().whileTrue(swerveDrive.runTestDrive());
     // driverController.a().onFalse(swerveDrive.runStopDrive());
     driverController.y().onTrue(swerveDrive.runZeroGyro());
-    BooleanSupplier leftBumperSupplier = driverController.leftBumper()::getAsBoolean;
+    BooleanSupplier leftBumperSupplier = driverController.leftBumper()::getAsBoolean; // robot centric true or field centric false
+
     BooleanSupplier altForwardSupplier = altController.leftStick()::getAsBoolean;
     BooleanSupplier altBackwardSupplier = altController.rightStick()::getAsBoolean;
     BooleanSupplier altIndexSupplier = altController.y()::getAsBoolean;
+    BooleanSupplier placeholderSupplier = () -> false;
+
     swerveDrive.setDefaultCommand(swerveDrive.runDriveInputs(
       driverController::getLeftY,
       driverController::getLeftX,
@@ -57,7 +60,11 @@ public class RobotContainer {
     shooter.setDefaultCommand(shooter.runAll(
       altForwardSupplier,
       altBackwardSupplier,
-      altIndexSupplier));
+      altIndexSupplier,
+      placeholderSupplier,
+      placeholderSupplier,
+      placeholderSupplier,
+      placeholderSupplier));
   }
 
   public Command getAutonomousCommand() {
