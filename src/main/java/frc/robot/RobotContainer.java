@@ -47,7 +47,9 @@ public class RobotContainer {
     BooleanSupplier altForwardSupplier = altController.leftStick()::getAsBoolean;
     BooleanSupplier altBackwardSupplier = altController.rightStick()::getAsBoolean;
     BooleanSupplier altIndexSupplier = altController.y()::getAsBoolean;
-    BooleanSupplier placeholderSupplier = () -> false;
+    BooleanSupplier altFlatPosSupplier = altController.rightBumper()::getAsBoolean;
+    BooleanSupplier altSpeakerPosSupplier = altController.rightTrigger()::getAsBoolean;
+    BooleanSupplier altAmpPosSupplier = () -> false;
 
     swerveDrive.setDefaultCommand(swerveDrive.runDriveInputs(
       driverController::getLeftY,
@@ -61,10 +63,10 @@ public class RobotContainer {
       altForwardSupplier,
       altBackwardSupplier,
       altIndexSupplier,
-      placeholderSupplier,
-      placeholderSupplier,
-      placeholderSupplier,
-      placeholderSupplier));
+      altFlatPosSupplier,
+      altSpeakerPosSupplier,
+      altAmpPosSupplier
+    ));
   }
 
   public Command getAutonomousCommand() {

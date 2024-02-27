@@ -97,7 +97,7 @@ public final class Constants {
     public static final int kMedianFilterSize = 5;
     
     public static final SparkPIDConstants kWristPIDConstants = new SparkPIDConstants(
-      "Wrist",
+      "ShooterWrist",
       0,
       0,
       0,
@@ -106,7 +106,13 @@ public final class Constants {
   }
 
   public static class IntakeConstants { // CAN ID range 15-19, TBD
-    
+    public static final SparkPIDConstants kDeployPIDConstants = new SparkPIDConstants(
+      "IntakeDeploy",
+      0,
+      0,
+      0,
+      0 // unused
+    );
   }
 
   public static class ClimberConstants { // CAN ID range 20+, TBD

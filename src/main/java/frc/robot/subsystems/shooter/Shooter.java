@@ -11,7 +11,11 @@ import com.revrobotics.SparkAbsoluteEncoder.Type;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.MedianFilter;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -21,13 +25,14 @@ import frc.robot.Constants.ShooterConstants;
 import frc.robot.util.MotorFF;
 
 public class Shooter extends SubsystemBase {
+    public static final NetworkTable shooterNT = NetworkTableInstance.getDefault().getTable("Shooter");
+
     private CANSparkMax wristMotor;
     private CANSparkMax indexMotor;
     private CANSparkMax shooterLowerMotor;
     private CANSparkMax shooterUpperMotor;
 
     private SparkAbsoluteEncoder wristEncoder;
-    private DutyCycleEncoder wristAbsEnc;
 
     private Ultrasonic ultrasonic;
     private MedianFilter ultrasonicFilter;
@@ -36,8 +41,13 @@ public class Shooter extends SubsystemBase {
     private MotorFF wristFF;
 
     private ShooterPosition shooterPosition;
+
+    private double wristPIDOutput;
+    private double wristFFOutput;
     
     public Shooter() {
+        Preferences.initDouble("testwrist", 0);
+
         wristMotor = new CANSparkMax(ShooterConstants.kWristMotorCanID, MotorType.kBrushless);
         indexMotor = new CANSparkMax(ShooterConstants.kIndexMotorCanID, MotorType.kBrushless);
         shooterLowerMotor = new CANSparkMax(ShooterConstants.kShooterLowerMotorCanID, MotorType.kBrushless);
@@ -52,15 +62,15 @@ public class Shooter extends SubsystemBase {
         shooterUpperMotor.restoreFactoryDefaults();
 
         wristEncoder = wristMotor.getAbsoluteEncoder(Type.kDutyCycle);
-        wristEncoder.setPositionConversionFactor(1/360);
-        wristEncoder.setVelocityConversionFactor(1);
+        wristEncoder.setPositionConversionFactor(360);
+        wristEncoder.setVelocityConversionFactor(360);
 
         wristMotor.setIdleMode(IdleMode.kBrake);
         indexMotor.setIdleMode(IdleMode.kBrake);
         shooterLowerMotor.setIdleMode(IdleMode.kBrake);
         shooterUpperMotor.setIdleMode(IdleMode.kBrake);
 
-        wristAbsEnc = new DutyCycleEncoder(0);
+        wristMotor.setInverted(true);
 
         wristPID = new PIDController(
             ShooterConstants.kWristPIDConstants.kP(),
@@ -73,7 +83,7 @@ public class Shooter extends SubsystemBase {
             ShooterConstants.kWristPIDConstants.kV(), // actually kG
             0
         );
-        shooterPosition = ShooterPosition.UP;
+        shooterPosition = ShooterPosition.SPEAKER;
         
     }
 
@@ -110,7 +120,7 @@ public class Shooter extends SubsystemBase {
     public Command runAll(
         BooleanSupplier forward, BooleanSupplier backward,
         BooleanSupplier index,
-        BooleanSupplier flat, BooleanSupplier speaker, BooleanSupplier amp, BooleanSupplier up) {
+        BooleanSupplier flat, BooleanSupplier speaker, BooleanSupplier amp) {
         return run(() -> {
             double ind = index.getAsBoolean() ? -6 : 0;
             double shoot = forward.getAsBoolean() ? -20 : (backward.getAsBoolean() ? 20 : 0);
@@ -123,13 +133,13 @@ public class Shooter extends SubsystemBase {
                 shooterPosition = ShooterPosition.FLAT;
             } else if(speaker.getAsBoolean()) {
                 shooterPosition = ShooterPosition.SPEAKER;
+                wristMotor.setVoltage(wristPIDOutput + wristFFOutput);
             } else if(amp.getAsBoolean()) {
                 shooterPosition = ShooterPosition.AMP;
-            } else if(up.getAsBoolean()) {
-                shooterPosition = ShooterPosition.UP;
             }
             shooterPosition = newPosition;
-            setWristPosition(newPosition);
+            // setWristPosition(newPosition);
+            wristMotor.setVoltage(flat.getAsBoolean() ? Preferences.getDouble("testwrist", 0) : 0);
 
             System.out.println("the" + ind + " " + shoot);
         });
@@ -155,10 +165,17 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("armPos", wristEncoder.getPosition());
-        SmartDashboard.putNumber("armPosA", wristAbsEnc.getAbsolutePosition());
+        shooterNT.getEntry("armPos").setDouble(wristEncoder.getPosition());
 
-        double wristPIDOutput = wristPID.calculate(getWristPostition());
-        double wristFFOutput = wristFF.calculate(wristPID.getSetpoint(), 0);
+        wristPIDOutput = wristPID.calculate(getWristPostition());
+        wristFFOutput = wristFF.calculate(Units.degreesToRadians(wristPID.getSetpoint() - 17), 0); // adjust offset here
+
+        wristPID.setP(ShooterConstants.kWristPIDConstants.kP());
+        wristPID.setI(ShooterConstants.kWristPIDConstants.kI());
+        wristPID.setD(ShooterConstants.kWristPIDConstants.kD());
+        wristFF.setG(ShooterConstants.kWristPIDConstants.kV());
+
+        shooterNT.getEntry("armpid").setDouble(wristPIDOutput);
+        shooterNT.getEntry("armff").setDouble(wristFFOutput);
     }
 }
