@@ -42,7 +42,7 @@
   {
     "name": "/Preferences/kSwerveModuleTurnP",
     "type": "double",
-    "value": 0.2,
+    "value": 0.25,
     "properties": {
       "persistent": true
     }

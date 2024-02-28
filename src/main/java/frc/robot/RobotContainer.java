@@ -37,8 +37,9 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    driverController.a().whileTrue(swerveDrive.runTestDrive());
-    driverController.a().onFalse(swerveDrive.runStopDrive());
+    // driverController.a().whileTrue(swerveDrive.runTestDrive());
+    // driverController.a().onFalse(swerveDrive.runStopDrive());
+    driverController.a().onTrue(swerveDrive.runUpdateConstants());
     driverController.y().onTrue(swerveDrive.runZeroGyro());
     BooleanSupplier leftBumperSupplier = driverController.leftBumper()::getAsBoolean;
     swerveDrive.setDefaultCommand(swerveDrive.runDriveInputs(

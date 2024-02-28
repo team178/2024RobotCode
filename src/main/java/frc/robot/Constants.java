@@ -77,7 +77,7 @@ public final class Constants {
 
     public static final SparkPIDConstants kTurnPIDConstants = new SparkPIDConstants(
       "SwerveModuleTurn",
-      0.2,
+      0.25,
       0, // 0.0001
       0,
       0
