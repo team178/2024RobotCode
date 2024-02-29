@@ -9,11 +9,13 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.MedianFilter;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.Ultrasonic;
@@ -32,6 +34,8 @@ public class Shooter extends SubsystemBase {
     private CANSparkMax shooterLowerMotor;
     private CANSparkMax shooterUpperMotor;
 
+    private DigitalInput lowerLimit;
+
     private SparkAbsoluteEncoder wristEncoder;
 
     private Ultrasonic ultrasonic;
@@ -44,6 +48,11 @@ public class Shooter extends SubsystemBase {
 
     private double wristPIDOutput;
     private double wristFFOutput;
+
+    private double speedFactor;
+
+    private boolean toSetpoint;
+    private boolean toTest;
     
     public Shooter() {
         Preferences.initDouble("testwrist", 0);
@@ -55,6 +64,8 @@ public class Shooter extends SubsystemBase {
 
         // ultrasonic = new Ultrasonic(ShooterConstants.kUltrasonicEchoDIOPort, ShooterConstants.kUltrasonicEchoDIOPort);
         // ultrasonicFilter = new MedianFilter(ShooterConstants.kMedianFilterSize);
+
+        lowerLimit = new DigitalInput(ShooterConstants.kLowerLimitDIOPort);
 
         wristMotor.restoreFactoryDefaults();
         indexMotor.restoreFactoryDefaults();
@@ -83,17 +94,19 @@ public class Shooter extends SubsystemBase {
             ShooterConstants.kWristPIDConstants.kV(), // actually kG
             0
         );
-        shooterPosition = ShooterPosition.SPEAKER;
-        
+        setWristPosition(ShooterPosition.SPEAKER);
+        toSetpoint = false;
+        toTest = false;
+        speedFactor = 0.3;
     }
 
     public void setIndexVolts(double volts) {
-        wristMotor.setVoltage(volts);
+        indexMotor.setVoltage(volts * speedFactor);
     }
 
     public void setShootVolts(double volts) {
-        shooterLowerMotor.setVoltage(volts);
-        shooterUpperMotor.setVoltage(-volts);
+        shooterLowerMotor.setVoltage(volts * speedFactor * 1.1);
+        shooterUpperMotor.setVoltage(-volts * speedFactor);
     }
 
     public void setWristPosition(ShooterPosition position) {
@@ -117,31 +130,55 @@ public class Shooter extends SubsystemBase {
         });
     }
 
+    public Command runSetToTest(boolean toTest) {
+        return runOnce(() -> {
+            this.toTest = toTest;
+        });
+    }
+
+    public Command runSetToSetpoint(boolean toSetpoint) {
+        return runOnce(() -> {
+            this.toSetpoint = toSetpoint;
+        });
+    }
+
+    public Command runBumpSetpoint(double bump) {
+        return run(() -> {
+            wristPID.setSetpoint(wristPID.getSetpoint() + bump);
+        });
+    }
+
+    public Command runSetWristPosition(ShooterPosition position) {
+        return runOnce(() -> setWristPosition(position));
+    }
+
+    public Command runSetSpeedFactor(double factor) {
+        return run(() -> {
+            speedFactor = factor;
+        });
+    }
+
     public Command runAll(
         BooleanSupplier forward, BooleanSupplier backward,
         BooleanSupplier index,
         BooleanSupplier flat, BooleanSupplier speaker, BooleanSupplier amp) {
         return run(() -> {
-            double ind = index.getAsBoolean() ? -6 : 0;
-            double shoot = forward.getAsBoolean() ? -20 : (backward.getAsBoolean() ? 20 : 0);
+            // double ind = index.getAsBoolean() ? -6 : 0;
+            // double shoot = forward.getAsBoolean() ? -20 : (backward.getAsBoolean() ? 20 : 0);
 
-            runIndex(ind);
-            setShootVolts(shoot);
+            // setIndexVolts(ind);
+            // setShootVolts(shoot);
 
-            ShooterPosition newPosition = shooterPosition;
-            if(flat.getAsBoolean()) {
-                shooterPosition = ShooterPosition.FLAT;
-            } else if(speaker.getAsBoolean()) {
-                shooterPosition = ShooterPosition.SPEAKER;
-                wristMotor.setVoltage(wristPIDOutput + wristFFOutput);
-            } else if(amp.getAsBoolean()) {
-                shooterPosition = ShooterPosition.AMP;
-            }
-            shooterPosition = newPosition;
+            // ShooterPosition newPosition = shooterPosition;
+            // if(flat.getAsBoolean()) {
+            //     shooterPosition = ShooterPosition.FLAT;
+            // } else if(speaker.getAsBoolean()) {
+            //     shooterPosition = ShooterPosition.SPEAKER;
+            // } else if(amp.getAsBoolean()) {
+            //     shooterPosition = ShooterPosition.AMP;
+            // }
+            // shooterPosition = newPosition;
             // setWristPosition(newPosition);
-            wristMotor.setVoltage(flat.getAsBoolean() ? Preferences.getDouble("testwrist", 0) : 0);
-
-            System.out.println("the" + ind + " " + shoot);
         });
     }
 
@@ -165,17 +202,33 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void periodic() {
-        shooterNT.getEntry("armPos").setDouble(wristEncoder.getPosition());
+        shooterNT.getEntry("armPos").setDouble(getWristPostition());
 
-        wristPIDOutput = wristPID.calculate(getWristPostition());
-        wristFFOutput = wristFF.calculate(Units.degreesToRadians(wristPID.getSetpoint() - 17), 0); // adjust offset here
+        wristPIDOutput = MathUtil.clamp(wristPID.calculate(getWristPostition()), -6, 6);
+        wristFFOutput = wristFF.calculate(Units.degreesToRadians(wristPID.getSetpoint() - 98.5 + 90), 0); // adjust offset here
 
         wristPID.setP(ShooterConstants.kWristPIDConstants.kP());
         wristPID.setI(ShooterConstants.kWristPIDConstants.kI());
         wristPID.setD(ShooterConstants.kWristPIDConstants.kD());
         wristFF.setG(ShooterConstants.kWristPIDConstants.kV());
 
+        if(lowerLimit.get()) {
+            wristMotor.setVoltage(MathUtil.clamp(wristPIDOutput + wristFFOutput, 0, 6));
+        } else {
+            wristMotor.setVoltage(wristPIDOutput + wristFFOutput);
+        }
+
+        // if(toTest) {
+        //     wristMotor.setVoltage(Preferences.getDouble("testwrist", 0));
+        // } else if(toSetpoint) {
+        //     wristMotor.setVoltage(wristPIDOutput + wristFFOutput);
+        // } else {
+        //     wristMotor.setVoltage(0);
+        // }
+
         shooterNT.getEntry("armpid").setDouble(wristPIDOutput);
         shooterNT.getEntry("armff").setDouble(wristFFOutput);
+        shooterNT.getEntry("armsetpoint").setDouble(wristPID.getSetpoint());
+        shooterNT.getEntry("lowerlimit").setBoolean(lowerLimit.get());
     }
 }

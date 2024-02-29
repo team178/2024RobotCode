@@ -6,6 +6,7 @@ package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShooterPosition;
 import frc.robot.subsystems.swerve.SwerveDrive;
 
 import java.util.function.BooleanSupplier;
@@ -46,7 +47,7 @@ public class RobotContainer {
 
     BooleanSupplier altForwardSupplier = altController.leftStick()::getAsBoolean;
     BooleanSupplier altBackwardSupplier = altController.rightStick()::getAsBoolean;
-    BooleanSupplier altIndexSupplier = altController.y()::getAsBoolean;
+    BooleanSupplier altIndexSupplier = altController.leftBumper()::getAsBoolean;
     BooleanSupplier altFlatPosSupplier = altController.rightBumper()::getAsBoolean;
     BooleanSupplier altSpeakerPosSupplier = altController.rightTrigger()::getAsBoolean;
     BooleanSupplier altAmpPosSupplier = () -> false;
@@ -59,14 +60,35 @@ public class RobotContainer {
       leftBumperSupplier,
       true
     ));
-    shooter.setDefaultCommand(shooter.runAll(
-      altForwardSupplier,
-      altBackwardSupplier,
-      altIndexSupplier,
-      altFlatPosSupplier,
-      altSpeakerPosSupplier,
-      altAmpPosSupplier
-    ));
+    // shooter.setDefaultCommand(shooter.runAll(
+    //   altForwardSupplier,
+    //   altBackwardSupplier,
+    //   altIndexSupplier,
+    //   altFlatPosSupplier,
+    //   altSpeakerPosSupplier,
+    //   altAmpPosSupplier
+    // ));
+    
+    // altController.rightBumper().onTrue(shooter.runSetToTest(true));
+    // altController.rightBumper().onFalse(shooter.runSetToTest(false));
+    // altController.rightTrigger().onTrue(shooter.runSetToSetpoint(true));
+    // altController.rightTrigger().onFalse(shooter.runSetToSetpoint(false));
+    altController.rightBumper().whileTrue(shooter.runSetSpeedFactor(1));
+    altController.rightBumper().whileFalse(shooter.runSetSpeedFactor(0.3));
+    altController.povUp().whileTrue(shooter.runBumpSetpoint(0.15));
+    altController.povDown().whileTrue(shooter.runBumpSetpoint(-0.15));
+    altController.x().onTrue(shooter.runSetWristPosition(ShooterPosition.SPEAKER));
+    altController.y().onTrue(shooter.runSetWristPosition(ShooterPosition.AMP));
+    altController.a().onTrue(shooter.runSetWristPosition(ShooterPosition.SOURCE));
+    altController.b().onTrue(shooter.runSetWristPosition(ShooterPosition.FLAT));
+    altController.leftStick().onTrue(shooter.runShooter(-20));
+    altController.leftStick().onFalse(shooter.runShooter(0));
+    altController.rightStick().onTrue(shooter.runShooter(20));
+    altController.rightStick().onFalse(shooter.runShooter(0));
+    altController.leftBumper().onTrue(shooter.runIndex(-10));
+    altController.leftBumper().onFalse(shooter.runIndex(0));
+    altController.leftTrigger().onTrue(shooter.runIndex(10));
+    altController.leftTrigger().onFalse(shooter.runIndex(0));
   }
 
   public Command getAutonomousCommand() {

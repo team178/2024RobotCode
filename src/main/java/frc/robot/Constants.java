@@ -95,13 +95,15 @@ public final class Constants {
     public static final int kUltrasonicPingDIOPort = 0;
     public static final int kUltrasonicEchoDIOPort = 1;
     public static final int kMedianFilterSize = 5;
+
+    public static final int kLowerLimitDIOPort = 1;
     
     public static final SparkPIDConstants kWristPIDConstants = new SparkPIDConstants(
       "ShooterWrist",
+      0.15,
       0,
       0,
-      0,
-      0 // actually kG in motorFF
+      0.5 // actually kG in motorFF
     );
   }
 

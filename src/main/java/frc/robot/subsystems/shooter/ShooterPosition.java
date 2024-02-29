@@ -1,9 +1,10 @@
 package frc.robot.subsystems.shooter;
 
 public enum ShooterPosition {
-    FLAT(0),
-    AMP(0),
-    SPEAKER(0);
+    FLAT(18.5),
+    AMP(108.7),
+    SPEAKER(65),
+    SOURCE(49);
     
     public final double position;
     
