@@ -97,11 +97,11 @@ public class Shooter extends SubsystemBase {
         setWristPosition(ShooterPosition.SPEAKER);
         toSetpoint = false;
         toTest = false;
-        speedFactor = 0.3;
+        speedFactor = 0;
     }
 
     public void setIndexVolts(double volts) {
-        indexMotor.setVoltage(volts * speedFactor);
+        indexMotor.setVoltage(volts * Math.abs(speedFactor));
     }
 
     public void setShootVolts(double volts) {
@@ -212,11 +212,12 @@ public class Shooter extends SubsystemBase {
         wristPID.setD(ShooterConstants.kWristPIDConstants.kD());
         wristFF.setG(ShooterConstants.kWristPIDConstants.kV());
 
-        if(lowerLimit.get()) {
-            wristMotor.setVoltage(MathUtil.clamp(wristPIDOutput + wristFFOutput, 0, 6));
-        } else {
-            wristMotor.setVoltage(wristPIDOutput + wristFFOutput);
-        }
+        // if(lowerLimit.get()) {
+        //     wristMotor.setVoltage(MathUtil.clamp(wristPIDOutput + wristFFOutput, 0, 6));
+        // } else {
+        //     wristMotor.setVoltage(wristPIDOutput + wristFFOutput);
+        // }
+        wristMotor.setVoltage(wristPIDOutput + wristFFOutput);
 
         // if(toTest) {
         //     wristMotor.setVoltage(Preferences.getDouble("testwrist", 0));
@@ -226,9 +227,26 @@ public class Shooter extends SubsystemBase {
         //     wristMotor.setVoltage(0);
         // }
 
+        switch(shooterPosition) {
+            case SOURCE:
+                speedFactor = 0.2;
+                break;
+            case SPEAKER:
+                speedFactor = -1;
+                break;
+            case AMP:
+                speedFactor = 0.3;
+                break;
+            default:
+                speedFactor = -0.04;
+                break;
+        }
+
         shooterNT.getEntry("armpid").setDouble(wristPIDOutput);
         shooterNT.getEntry("armff").setDouble(wristFFOutput);
         shooterNT.getEntry("armsetpoint").setDouble(wristPID.getSetpoint());
         shooterNT.getEntry("lowerlimit").setBoolean(lowerLimit.get());
-    }
+        shooterNT.getEntry("speedfactor").setDouble(speedFactor);
+        shooterNT.getEntry("shooterposition").setString(shooterPosition.toString());
+   }
 }
