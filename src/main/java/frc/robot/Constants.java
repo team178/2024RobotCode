@@ -35,13 +35,14 @@ public final class Constants {
     public static final int kPigeonCanID = 9;
 
     public static final double kSRXMagEncoderCPR = 4096; // may be 1024
-    public static final double kTurnPositionConversionFactor = Units.rotationsToRadians(1 / kSRXMagEncoderCPR);
+    public static final double kTurnRelPositionConversionFactor = Units.rotationsToRadians(1 / kSRXMagEncoderCPR);
 
     public static final double kDriveGearRatio = 6.75 / 1; // rotations on input per rotations on output
     public static final double kInternalNEOEncoderCPR = 42 / 1; // counts on encoder per rotation
     public static final double kWheelMetersPerRotation = Units.inchesToMeters(Math.PI * 4); // meters per rotation (wheel circumference)
     public static final double kDriveVelocityConversionFactor = kWheelMetersPerRotation / (kDriveGearRatio * kInternalNEOEncoderCPR); //!This MAY BE meters/min
     public static final double kDrivePositionConversionFactor = kWheelMetersPerRotation / (kDriveGearRatio * kInternalNEOEncoderCPR); // meters per count
+    public static final double kTurnAbsPositionConversionFactor = Units.rotationsToRadians(1);
 
     public static final double kMaxWheelSpeed = 6; // m/s
     public static final double kMagVelLimit = 3; // m/s

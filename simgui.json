@@ -69,7 +69,8 @@
       "Swerve Modules": {
         "2 Back Left": {
           "open": true
-        }
+        },
+        "open": true
       }
     }
   },

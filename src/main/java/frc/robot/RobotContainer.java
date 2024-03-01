@@ -40,6 +40,8 @@ public class RobotContainer {
     driverController.a().whileTrue(swerveDrive.runTestDrive());
     driverController.a().onFalse(swerveDrive.runStopDrive());
     driverController.y().onTrue(swerveDrive.runZeroGyro());
+    driverController.rightBumper().onTrue(swerveDrive.runSetSpeedFactor(0.3));
+    driverController.rightBumper().onFalse(swerveDrive.runSetSpeedFactor(1));
     BooleanSupplier leftBumperSupplier = driverController.leftBumper()::getAsBoolean;
     swerveDrive.setDefaultCommand(swerveDrive.runDriveInputs(
       driverController::getLeftX,
@@ -49,6 +51,14 @@ public class RobotContainer {
       leftBumperSupplier,
       true
     ));
+    // swerveDrive.setDefaultCommand(swerveDrive.runDriveInputs(
+    //   () -> 0,
+    //   () -> 0,
+    //   () -> 0, // use in real robot
+    //   // altController::getLeftX, //use in simulation
+    //   () -> false,
+    //   true
+    // ));
   }
 
   public Command getAutonomousCommand() {

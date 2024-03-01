@@ -62,6 +62,8 @@ public class SwerveDrive extends SubsystemBase {
     private MechanismLigament2dWrapper backLeftDirLigament;
     private MechanismLigament2dWrapper backRightDirLigament;
 
+    private double speedFactor;
+
     private Field2d field;
 
     public SwerveDrive() {
@@ -107,6 +109,8 @@ public class SwerveDrive extends SubsystemBase {
     }
 
     private void initMathModels() {
+        speedFactor = 1;
+
         magnitudeAccelLimiter = new RateLimiter(SwerveConstants.kMagAccelLimit);
         directionVelLimiter = new RateLimiter(SwerveConstants.kDirVelLimit, -SwerveConstants.kDirVelLimit, Math.PI / 2);
         rotationAccelLimiter = new RateLimiter(SwerveConstants.kRotAccelLimit);
@@ -123,18 +127,20 @@ public class SwerveDrive extends SubsystemBase {
             frontLeftModule.getPosition(),
             frontRightModule.getPosition()
         }, new Pose2d());
+
+        swerveKinematics.toSwerveModuleStates(new ChassisSpeeds(0, 0.01, 0));
     }
 
     private void initSimulations() {
-        frontLeftLigament = new MechanismLigament2dWrapper("frontLeftWheel", 0, 90, 5, new Color8Bit(Color.kRed));
+        frontLeftLigament = new MechanismLigament2dWrapper("frontLeftWheel", 0, 0, 5, new Color8Bit(Color.kRed));
         frontRightLigament = new MechanismLigament2dWrapper("frontRightWheel", 0, 90, 5, new Color8Bit(Color.kOrange));
         backLeftLigament = new MechanismLigament2dWrapper("backLeftWheel", 0, 90, 5, new Color8Bit(Color.kYellow));
-        backRightLigament = new MechanismLigament2dWrapper("backRightWheel", 0, 90, 5, new Color8Bit(Color.kPurple));
+        backRightLigament = new MechanismLigament2dWrapper("backRightWheel", 0, 180, 5, new Color8Bit(Color.kPurple));
 
-        frontLeftDirLigament = new MechanismLigament2dWrapper("frontLeftWheelDir", 0.4, 90, 3, new Color8Bit(Color.kGreen));
+        frontLeftDirLigament = new MechanismLigament2dWrapper("frontLeftWheelDir", 0.4, 0, 3, new Color8Bit(Color.kGreen));
         frontRightDirLigament = new MechanismLigament2dWrapper("frontRightWheelDir", 0.4, 90, 3, new Color8Bit(Color.kGreen));
         backLeftDirLigament = new MechanismLigament2dWrapper("backLeftWheelDir", 0.4, 90, 3, new Color8Bit(Color.kGreen));
-        backRightDirLigament = new MechanismLigament2dWrapper("backRightWheelDir", 0.4, 90, 3, new Color8Bit(Color.kGreen));
+        backRightDirLigament = new MechanismLigament2dWrapper("backRightWheelDir", 0.4, 180, 3, new Color8Bit(Color.kGreen));
         
         swerveVisualizer = new Mechanism2d(10, 10);
         MechanismRoot2d root = swerveVisualizer.getRoot("root", 2, 2);
@@ -182,7 +188,7 @@ public class SwerveDrive extends SubsystemBase {
     public Command runDriveInputs(DoubleSupplier rawXSpeed, DoubleSupplier rawYSpeed, DoubleSupplier rawRotSpeed, BooleanSupplier robotCentric, boolean rateLimited) {
         return run(() -> {
             double adjXSpeed = MathUtil.applyDeadband(rawXSpeed.getAsDouble(), 0.2);
-            double adjYSpeed = MathUtil.applyDeadband(rawYSpeed.getAsDouble(), 0.2);
+            double adjYSpeed = MathUtil.applyDeadband(-rawYSpeed.getAsDouble(), 0.2);
             double adjRotSpeed = MathUtil.applyDeadband(-rawRotSpeed.getAsDouble(), 0.2);
 
             adjustedDriveInputs(adjXSpeed, adjYSpeed, adjRotSpeed, robotCentric.getAsBoolean(), rateLimited);
@@ -209,7 +215,7 @@ public class SwerveDrive extends SubsystemBase {
         double dir = directionVelLimiter.getPrevVal();
         if(adjXSpeed != 0 || adjYSpeed != 0) {
             // if(Math.abs(prevDir - rawDir) > Math.PI)
-            dir = directionVelLimiter.angleCalculate(rawDir);
+            directionVelLimiter.angleCalculate(rawDir);
             magSpeed = magnitudeAccelLimiter.calculate(rawMagSpeed * swerveAngleDifference(rawDir, directionVelLimiter.getPrevVal()).speedMetersPerSecond);
         } else {
             magSpeed = magnitudeAccelLimiter.calculate(rawMagSpeed);
@@ -298,6 +304,12 @@ public class SwerveDrive extends SubsystemBase {
     public Command runZeroGyro() {
         return runOnce(() -> {
             gyro.reset();
+        });
+    }
+
+    public Command runSetSpeedFactor(double factor) {
+        return runOnce(() -> {
+            speedFactor = factor;
         });
     }
 
