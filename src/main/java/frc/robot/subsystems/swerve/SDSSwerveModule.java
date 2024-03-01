@@ -95,7 +95,7 @@ public class SDSSwerveModule {
         turnMotor.burnFlash();
         driveMotor.burnFlash();
 
-        setDesiredSwerveState(new SwerveModuleState(0, new Rotation2d()));
+        setDesiredSwerveState(new SwerveModuleState(Math.PI / 2, new Rotation2d()));
 
         moduleNT = swerveModulesNT.getSubTable(name);
         moduleNT.getEntry("turnRelPos").setDefaultDouble(0);
@@ -150,7 +150,7 @@ public class SDSSwerveModule {
         return new SwerveModulePosition( 
             driveEncoder.getPosition(),
             useAbsolute ? Rotation2d.fromRadians(getAbsTurnPos()).plus(chassisAngularOffset) : Rotation2d.fromRadians(getRelTurnPos() / 2)
-        );
+        ); // minus offset???
     }
 
     public void updateConstants() {

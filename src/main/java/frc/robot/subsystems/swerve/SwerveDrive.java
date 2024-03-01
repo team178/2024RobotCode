@@ -39,7 +39,7 @@ public class SwerveDrive extends SubsystemBase {
     private Pigeon2 gyro;
 
     private SwerveDriveKinematics swerveKinematics;
-    private SwerveDrivePoseEstimator swerveOdomentry;
+    private SwerveDrivePoseEstimator swerveOdometry;
 
     private RateLimiter magnitudeAccelLimiter;
     private RateLimiter directionVelLimiter;
@@ -111,7 +111,7 @@ public class SwerveDrive extends SubsystemBase {
             new Translation2d(SwerveConstants.kWheelDistanceMeters / 2, -SwerveConstants.kWheelDistanceMeters / 2),
             new Translation2d(SwerveConstants.kWheelDistanceMeters / 2, SwerveConstants.kWheelDistanceMeters / 2)
         );
-        swerveOdomentry = new SwerveDrivePoseEstimator(swerveKinematics, Rotation2d.fromDegrees(gyro.getAngle()), new SwerveModulePosition[]{
+        swerveOdometry = new SwerveDrivePoseEstimator(swerveKinematics, Rotation2d.fromDegrees(gyro.getAngle()), new SwerveModulePosition[]{
             backLeftModule.getPosition(),
             backRightModule.getPosition(),
             frontLeftModule.getPosition(),
@@ -156,6 +156,12 @@ public class SwerveDrive extends SubsystemBase {
         
     }
 
+    /**
+     * Calculates angle difference for swerve modules
+     * @param newAngle 
+     * @param oldAngle
+     * @return SwerveModuleState that contains the difference in angle and 1 or -1 based on if the wheel output was flipped
+     */
     public static SwerveModuleState swerveAngleDifference(double newAngle, double oldAngle) {
         double difference = Math.abs(newAngle - oldAngle) > Math.PI ?
             (newAngle - oldAngle) - Math.signum(newAngle - oldAngle) * 2 * Math.PI :
@@ -175,9 +181,9 @@ public class SwerveDrive extends SubsystemBase {
 
     public Command runDriveInputs(DoubleSupplier rawXSpeed, DoubleSupplier rawYSpeed, DoubleSupplier rawRotSpeed, BooleanSupplier robotCentric, boolean rateLimited) {
         return run(() -> {
-            double adjXSpeed = MathUtil.applyDeadband(-rawXSpeed.getAsDouble(), 0.2);
+            double adjXSpeed = MathUtil.applyDeadband(rawXSpeed.getAsDouble(), 0.2);
             double adjYSpeed = MathUtil.applyDeadband(-rawYSpeed.getAsDouble(), 0.2);
-            double adjRotSpeed = MathUtil.applyDeadband(rawRotSpeed.getAsDouble(), 0.2);
+            double adjRotSpeed = MathUtil.applyDeadband(-rawRotSpeed.getAsDouble(), 0.2);
 
             adjustedDriveInputs(adjXSpeed, adjYSpeed, adjRotSpeed, robotCentric.getAsBoolean(), rateLimited);
         });
@@ -294,13 +300,13 @@ public class SwerveDrive extends SubsystemBase {
 
         SmartDashboard.putNumber("Gyro", gyro.getAngle());
 
-        swerveOdomentry.update(Rotation2d.fromDegrees(gyro.getAngle()), new SwerveModulePosition[]{
+        swerveOdometry.update(Rotation2d.fromDegrees(gyro.getAngle()), new SwerveModulePosition[]{
             backLeftModule.getPosition(),
             backRightModule.getPosition(),
             frontLeftModule.getPosition(),
             frontRightModule.getPosition()
         });
-        field.setRobotPose(swerveOdomentry.getEstimatedPosition());
+        field.setRobotPose(swerveOdometry.getEstimatedPosition());
         // System.out.println(swerveOdomentry.getEstimatedPosition().getX() + " " + swerveOdomentry.getEstimatedPosition().getY());
         SmartDashboard.putData(field);
     }
