@@ -73,7 +73,7 @@ public class SDSSwerveModule {
         turnPIDController.setP(SwerveModuleConstants.kTurnPIDConstants.kP());
         turnPIDController.setI(SwerveModuleConstants.kTurnPIDConstants.kI());
         turnPIDController.setD(SwerveModuleConstants.kTurnPIDConstants.kD());
-        turnMotor.setSmartCurrentLimit(10);
+        turnMotor.setSmartCurrentLimit(30);
         turnAbsEncoder.setPositionConversionFactor(2 * Math.PI);
         if(useAbsolute) {
             turnPIDController.setFeedbackDevice(turnAbsEncoder);
@@ -83,7 +83,7 @@ public class SDSSwerveModule {
         drivePIDController.setI(SwerveModuleConstants.kDrivePIDConstants.kI());
         drivePIDController.setD(SwerveModuleConstants.kDrivePIDConstants.kD());
         drivePIDController.setFF(SwerveModuleConstants.kDrivePIDConstants.kV());
-        driveMotor.setSmartCurrentLimit(20);
+        driveMotor.setSmartCurrentLimit(30);
         driveEncoder.setPositionConversionFactor(SwerveConstants.kDrivePositionConversionFactor);
         driveEncoder.setVelocityConversionFactor(SwerveConstants.kDriveVelocityConversionFactor);
         driveEncoder.setPositionConversionFactor(1); // TEMPORARY JUST TO CHECK IF ODOMETRY GOES THE RIGHT WAY
@@ -91,6 +91,7 @@ public class SDSSwerveModule {
         turnPIDController.setPositionPIDWrappingEnabled(true);
         turnPIDController.setPositionPIDWrappingMinInput(0);
         turnPIDController.setPositionPIDWrappingMaxInput(2 * Math.PI);
+        turnPIDController.setOutputRange(-2, 2);
 
         turnMotor.burnFlash();
         driveMotor.burnFlash();
@@ -106,28 +107,33 @@ public class SDSSwerveModule {
     }
 
     public void setDesiredSwerveState(SwerveModuleState state) {
+        setDesiredSwerveState(state, true);
+    }
+
+    public void setDesiredSwerveState(SwerveModuleState state, boolean optimize) {
         if(!Preferences.getBoolean(name + "Enabled", true)) return;
         SwerveModuleState correctedState = new SwerveModuleState();
         correctedState.speedMetersPerSecond = state.speedMetersPerSecond;
         correctedState.angle = state.angle.plus(chassisAngularOffset);
 
-        if(useAbsolute) {
-            correctedState = SwerveModuleState.optimize(
-                correctedState,
-                new Rotation2d(
-                    turnAbsEncoder.getPosition()
-                )
-            );
-        } else {
-            correctedState = SwerveModuleState.optimize(
-                correctedState,
-                new Rotation2d(
-                    turnRelEncoder.getPosition()
-                ).div(2) // i should probably figure out why it's 2 relative
-            );
-            correctedState.angle = correctedState.angle.times(2); // here too relative
+        if(optimize) {
+            if(useAbsolute) {
+                correctedState = SwerveModuleState.optimize(
+                    correctedState,
+                    new Rotation2d(
+                        turnAbsEncoder.getPosition()
+                    )
+                );
+            } else {
+                correctedState = SwerveModuleState.optimize(
+                    correctedState,
+                    new Rotation2d(
+                        turnRelEncoder.getPosition()
+                    ).div(2) // i should probably figure out why it's 2 relative
+                );
+                correctedState.angle = correctedState.angle.times(2); // here too relative
+            }
         }
-
 
         desiredSwerveState = correctedState;
         // System.out.println(name + " " + desiredSwerveState.speedMetersPerSecond + " " + desiredSwerveState.angle.getDegrees());
@@ -176,7 +182,7 @@ public class SDSSwerveModule {
         // moduleNT.getEntry("turnRelPos").setDouble(turnRelEncoder.getPosition());
         // moduleNT.getEntry("turnRelVel").setDouble(turnRelEncoder.getVelocity());
         moduleNT.getEntry("turnAbsPos").setDouble(turnAbsEncoder.getPosition());
-        moduleNT.getEntry("turnAdjPos").setDouble((turnAbsEncoder.getPosition() + chassisAngularOffset.getRadians()) % (2 * Math.PI));
+        moduleNT.getEntry("turnAdjPos").setDouble((turnAbsEncoder.getPosition() - chassisAngularOffset.getRadians() + 2 * Math.PI) % (2 * Math.PI));
         moduleNT.getEntry("turnAbsVel").setDouble(turnAbsEncoder.getVelocity());
         moduleNT.getEntry("driveVel").setDouble(driveEncoder.getVelocity());
         moduleNT.getEntry("desiredSpeed").setDouble(desiredSwerveState.speedMetersPerSecond);

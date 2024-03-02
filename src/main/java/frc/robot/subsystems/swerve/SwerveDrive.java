@@ -185,29 +185,46 @@ public class SwerveDrive extends SubsystemBase {
         // return (90 - (newAngle - oldAngle)) % 180 - 90;
     }
 
-    public Command runDriveInputs(DoubleSupplier rawXSpeed, DoubleSupplier rawYSpeed, DoubleSupplier rawRotSpeed, BooleanSupplier robotCentric, boolean rateLimited) {
+    public Command runDriveInputs(
+        DoubleSupplier rawXSpeed, DoubleSupplier rawYSpeed, DoubleSupplier rawRotSpeed,
+        BooleanSupplier robotCentric, BooleanSupplier noOptimize, boolean rateLimited) {
         return run(() -> {
             double adjXSpeed = MathUtil.applyDeadband(rawXSpeed.getAsDouble(), 0.2);
             double adjYSpeed = MathUtil.applyDeadband(-rawYSpeed.getAsDouble(), 0.2);
-            double adjRotSpeed = MathUtil.applyDeadband(-rawRotSpeed.getAsDouble(), 0.2);
 
-            adjustedDriveInputs(adjXSpeed, adjYSpeed, adjRotSpeed, robotCentric.getAsBoolean(), rateLimited);
+            double a = 0.1; // min
+            double b = 0.2; // deadband
+            double steepness = 2; // minimum 1
+            
+            double adjRotSpeed = MathUtil.applyDeadband(-rawRotSpeed.getAsDouble(), b);
+            adjRotSpeed = Math.signum(adjRotSpeed) * (
+                (1 - a) *
+                Math.pow(
+                    (Math.abs(adjRotSpeed) - b) / (1 - b),
+                    steepness
+                ) + a
+            );
+
+            adjustedDriveInputs(adjXSpeed, adjYSpeed, adjRotSpeed, robotCentric.getAsBoolean(), noOptimize.getAsBoolean(), rateLimited);
         });
     }
 
-    public void adjustedDriveInputs(double adjXSpeed, double adjYSpeed, double adjRotSpeed, boolean robotCentric, boolean rateLimited) {
+    public void adjustedDriveInputs(
+        double adjXSpeed, double adjYSpeed, double adjRotSpeed,
+        boolean robotCentric, boolean noOptimize, boolean rateLimited) {
         if(!rateLimited) {
             rawDriveInputs(
-                adjXSpeed * SwerveConstants.kMagVelLimit,
-                adjYSpeed * SwerveConstants.kMagVelLimit,
+                adjXSpeed * SwerveConstants.kMagVelLimit * speedFactor,
+                adjYSpeed * SwerveConstants.kMagVelLimit * speedFactor,
                 adjRotSpeed * SwerveConstants.kRotVelLimit,
+                noOptimize,
                 robotCentric
             );
             return;
         }
         double rawMagSpeed = Math.sqrt(Math.pow(adjXSpeed, 2) + Math.pow(adjYSpeed, 2));
         // rawMagSpeed = Math.pow(rawMagSpeed, 3);
-        rawMagSpeed *= SwerveConstants.kMagVelLimit;
+        rawMagSpeed *= SwerveConstants.kMagVelLimit * speedFactor;
         double rawDir = Math.atan2(adjYSpeed, adjXSpeed);
         rawMagSpeed /= Math.abs(Math.cos(rawDir)) + Math.abs(Math.sin(rawDir));
 
@@ -237,10 +254,10 @@ public class SwerveDrive extends SubsystemBase {
         ySpeed = MathUtil.applyDeadband(ySpeed, 0.01);
         rotSpeed = MathUtil.applyDeadband(rotSpeed, 0.01);
 
-        rawDriveInputs(xSpeed, ySpeed, rotSpeed, robotCentric);
+        rawDriveInputs(xSpeed, ySpeed, rotSpeed, noOptimize, robotCentric);
     }
 
-    public void rawDriveInputs(double rawXSpeed, double rawYSpeed, double rawRotSpeed, boolean robotCentric) {
+    public void rawDriveInputs(double rawXSpeed, double rawYSpeed, double rawRotSpeed, boolean noOptimize, boolean robotCentric) {
         SwerveModuleState[] states = swerveKinematics.toSwerveModuleStates(!robotCentric ?
             ChassisSpeeds.fromFieldRelativeSpeeds(rawXSpeed, rawYSpeed, rawRotSpeed, Rotation2d.fromDegrees(-gyro.getAngle())) : // see if gyro is done correctly 
             new ChassisSpeeds(rawXSpeed, rawYSpeed, rawRotSpeed)
@@ -274,10 +291,10 @@ public class SwerveDrive extends SubsystemBase {
         swerveDriveBackRightNT.getEntry("angle").setDouble(states[3].angle.getDegrees());
         swerveDriveBackRightNT.getEntry("speed").setDouble(states[3].speedMetersPerSecond);
 
-        frontLeftModule.setDesiredSwerveState(states[0]);
-        frontRightModule.setDesiredSwerveState(states[1]);
-        backLeftModule.setDesiredSwerveState(states[2]);
-        backRightModule.setDesiredSwerveState(states[3]);
+        frontLeftModule.setDesiredSwerveState(states[0], !noOptimize);
+        frontRightModule.setDesiredSwerveState(states[1], !noOptimize);
+        backLeftModule.setDesiredSwerveState(states[2], !noOptimize);
+        backRightModule.setDesiredSwerveState(states[3], !noOptimize);
     }
 
     public Command runTestDrive() {

@@ -48,7 +48,7 @@ public final class Constants {
     public static final double kMagVelLimit = 3; // m/s
     public static final double kDirVelLimit = 10; // rad/s
     public static final double kRotVelLimit = 6; // rad/s
-    public static final double kMagAccelLimit = 15; // m/s^2
+    public static final double kMagAccelLimit = 20; // m/s^2
     public static final double kRotAccelLimit = 30; // rad/s^2
 
     public static final double kDefaultTestTurn = 0;
@@ -78,7 +78,7 @@ public final class Constants {
 
     public static final SparkPIDConstants kTurnPIDConstants = new SparkPIDConstants(
       "SwerveModuleTurn",
-      0.2,
+      0.3,
       0, // 0.0001
       0,
       0
