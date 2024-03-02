@@ -204,7 +204,10 @@ public class Shooter extends SubsystemBase {
     public void periodic() {
         shooterNT.getEntry("armPos").setDouble(getWristPostition());
 
-        wristPIDOutput = MathUtil.clamp(wristPID.calculate(getWristPostition()), -6, 6);
+        wristPIDOutput = MathUtil.clamp(
+            wristPID.calculate(getWristPostition()),
+            -ShooterConstants.kWristPIDMaxOutput,
+            ShooterConstants.kWristPIDMaxOutput);
         wristFFOutput = wristFF.calculate(Units.degreesToRadians(wristPID.getSetpoint() - 98.5 + 90), 0); // adjust offset here
 
         wristPID.setP(ShooterConstants.kWristPIDConstants.kP());

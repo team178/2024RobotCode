@@ -97,6 +97,9 @@ public final class Constants {
     public static final int kMedianFilterSize = 5;
 
     public static final int kLowerLimitDIOPort = 1;
+
+    public static final double kWristPIDMaxOutput = 4; // volts
+    public static final double kIntakeInArmLimit = 80; // 76 first contact with wires, 91 absolute maximum
     
     public static final SparkPIDConstants kWristPIDConstants = new SparkPIDConstants(
       "ShooterWrist",
