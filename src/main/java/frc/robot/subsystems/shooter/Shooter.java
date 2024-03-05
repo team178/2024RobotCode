@@ -10,7 +10,6 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.MedianFilter;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
@@ -25,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.util.MotorFF;
+import frc.robot.util.MotorPID;
 
 public class Shooter extends SubsystemBase {
     public static final NetworkTable shooterNT = NetworkTableInstance.getDefault().getTable("Shooter");
@@ -41,7 +41,7 @@ public class Shooter extends SubsystemBase {
     private Ultrasonic ultrasonic;
     private MedianFilter ultrasonicFilter;
 
-    private PIDController wristPID;
+    private MotorPID wristPID;
     private MotorFF wristFF;
 
     private ShooterPosition shooterPosition;
@@ -83,7 +83,17 @@ public class Shooter extends SubsystemBase {
 
         wristMotor.setInverted(true);
 
-        wristPID = new PIDController(
+        // do be need test !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        wristMotor.setCANTimeout(0);
+        indexMotor.setCANTimeout(0);
+        shooterLowerMotor.setCANTimeout(0);
+        shooterUpperMotor.setCANTimeout(0);
+        // wristMotor.enableVoltageCompensation(12);
+        // indexMotor.enableVoltageCompensation(12);
+        // shooterLowerMotor.enableVoltageCompensation(12);
+        // shooterUpperMotor.enableVoltageCompensation(12);
+
+        wristPID = new MotorPID(
             ShooterConstants.kWristPIDConstants.kP(),
             ShooterConstants.kWristPIDConstants.kI(), 
             ShooterConstants.kWristPIDConstants.kD() 
@@ -112,6 +122,7 @@ public class Shooter extends SubsystemBase {
     public void setWristPosition(ShooterPosition position) {
         shooterPosition = position;
         wristPID.setSetpoint(position.position);
+        wristPID.resetIntegralError();
     }
     
     public double getWristPostition() {
@@ -241,7 +252,7 @@ public class Shooter extends SubsystemBase {
                 speedFactor = -1;
                 break;
             case AMP:
-                speedFactor = 0.3;
+                speedFactor = 0.5; // 0.3
                 break;
             default:
                 speedFactor = -0.04;

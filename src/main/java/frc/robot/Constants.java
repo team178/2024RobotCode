@@ -103,8 +103,8 @@ public final class Constants {
     
     public static final SparkPIDConstants kWristPIDConstants = new SparkPIDConstants(
       "ShooterWrist",
-      0.15,
-      0,
+      0.16,
+      0.007,
       0,
       0.5 // actually kG in motorFF
     );
