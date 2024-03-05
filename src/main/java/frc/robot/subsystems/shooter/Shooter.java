@@ -93,6 +93,11 @@ public class Shooter extends SubsystemBase {
         // shooterLowerMotor.enableVoltageCompensation(12);
         // shooterUpperMotor.enableVoltageCompensation(12);
 
+        wristMotor.burnFlash();
+        indexMotor.burnFlash();
+        shooterLowerMotor.burnFlash();
+        shooterUpperMotor.burnFlash();
+
         wristPID = new MotorPID(
             ShooterConstants.kWristPIDConstants.kP(),
             ShooterConstants.kWristPIDConstants.kI(), 
