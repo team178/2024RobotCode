@@ -62,6 +62,12 @@ public class SDSSwerveModule {
         turnMotor.setClosedLoopRampRate(0); // to be set?
         driveMotor.setClosedLoopRampRate(0);
 
+        // thesse need to be tested!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        turnMotor.setCANTimeout(0);
+        driveMotor.setCANTimeout(0);
+        turnMotor.enableVoltageCompensation(12);
+        driveMotor.enableVoltageCompensation(12);
+
         turnRelEncoder = turnMotor.getEncoder(); // Will change to absolute once mag encoder is wired properly
         turnAbsEncoder = turnMotor.getAbsoluteEncoder(Type.kDutyCycle);
         driveEncoder = driveMotor.getEncoder();
@@ -86,7 +92,7 @@ public class SDSSwerveModule {
         driveMotor.setSmartCurrentLimit(30);
         driveEncoder.setPositionConversionFactor(SwerveConstants.kDrivePositionConversionFactor);
         driveEncoder.setVelocityConversionFactor(SwerveConstants.kDriveVelocityConversionFactor);
-        driveEncoder.setPositionConversionFactor(1); // TEMPORARY JUST TO CHECK IF ODOMETRY GOES THE RIGHT WAY
+        // driveEncoder.setPositionConversionFactor(1); // TEMPORARY JUST TO CHECK IF ODOMETRY GOES THE RIGHT WAY
 
         turnPIDController.setPositionPIDWrappingEnabled(true);
         turnPIDController.setPositionPIDWrappingMinInput(0);
@@ -163,7 +169,10 @@ public class SDSSwerveModule {
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition( 
             driveEncoder.getPosition(),
-            useAbsolute ? Rotation2d.fromRadians(getAbsTurnPos()).plus(chassisAngularOffset) : Rotation2d.fromRadians(getRelTurnPos() / 2)
+            useAbsolute
+                ? Rotation2d.fromRadians(getAbsTurnPos()).minus(chassisAngularOffset)
+                    .minus(Rotation2d.fromDegrees(90))
+                : Rotation2d.fromRadians(getRelTurnPos() / 2)
         );
     }
 
@@ -187,5 +196,7 @@ public class SDSSwerveModule {
         moduleNT.getEntry("driveVel").setDouble(driveEncoder.getVelocity());
         moduleNT.getEntry("desiredSpeed").setDouble(desiredSwerveState.speedMetersPerSecond);
         moduleNT.getEntry("desiredAngle").setDouble(desiredSwerveState.angle.getRadians());
+        moduleNT.getEntry("positionDrive").setDouble(getPosition().distanceMeters);
+        moduleNT.getEntry("positionTurn").setDouble(getPosition().angle.getDegrees());
     }
 }

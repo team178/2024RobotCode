@@ -41,7 +41,7 @@ public final class Constants {
     public static final double kInternalNEOEncoderCPR = 42 / 1; // counts on encoder per rotation
     public static final double kWheelMetersPerRotation = Units.inchesToMeters(Math.PI * 4); // meters per rotation (wheel circumference)
     public static final double kDriveVelocityConversionFactor = kWheelMetersPerRotation / (kDriveGearRatio * kInternalNEOEncoderCPR); //!This MAY BE meters/min
-    public static final double kDrivePositionConversionFactor = kWheelMetersPerRotation / (kDriveGearRatio * kInternalNEOEncoderCPR); // meters per count
+    public static final double kDrivePositionConversionFactor = kDriveGearRatio * kWheelMetersPerRotation / (kInternalNEOEncoderCPR); // meters per count
     public static final double kTurnAbsPositionConversionFactor = Units.rotationsToRadians(1);
 
     public static final double kMaxWheelSpeed = 6; // m/s

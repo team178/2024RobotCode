@@ -37,15 +37,6 @@
         "00 Calculations": {
           "open": true
         },
-        "10 Desired Front Left": {
-          "open": true
-        },
-        "11 Desired Front Right": {
-          "open": true
-        },
-        "12 Desired Back Left": {
-          "open": true
-        },
         "13 Desired Back Right": {
           "open": true
         },
@@ -67,7 +58,7 @@
         "open": true
       },
       "Swerve Modules": {
-        "2 Back Left": {
+        "3 Back Right": {
           "open": true
         },
         "open": true
