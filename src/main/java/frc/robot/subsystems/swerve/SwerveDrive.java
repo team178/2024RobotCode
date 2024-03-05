@@ -13,7 +13,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.NetworkTable;
@@ -178,6 +177,12 @@ public class SwerveDrive extends SubsystemBase {
         
     }
 
+    /**
+     * Calculates angle difference for swerve modules
+     * @param newAngle 
+     * @param oldAngle
+     * @return SwerveModuleState that contains the difference in angle and 1 or -1 based on if the wheel output was flipped
+     */
     public static SwerveModuleState swerveAngleDifference(double newAngle, double oldAngle) {
         double difference = Math.abs(newAngle - oldAngle) > Math.PI ?
             (newAngle - oldAngle) - Math.signum(newAngle - oldAngle) * 2 * Math.PI :
@@ -193,6 +198,15 @@ public class SwerveDrive extends SubsystemBase {
         );
         return output;
         // return (90 - (newAngle - oldAngle)) % 180 - 90;
+    }
+
+    public Command runUpdateConstants() {
+        return runOnce(() -> {
+            frontLeftModule.updateConstants();
+            frontRightModule.updateConstants();
+            backLeftModule.updateConstants();
+            backRightModule.updateConstants();
+        });
     }
 
     public Command runDriveInputs(
@@ -370,10 +384,10 @@ public class SwerveDrive extends SubsystemBase {
         // backLeftModule.updateConstants();
         // backRightModule.updateConstants();
 
-        frontLeftModule.putInfo("frontLeft");
-        frontRightModule.putInfo("frontRight");
-        backLeftModule.putInfo("backLeft");
-        backRightModule.putInfo("backRight");
+        frontLeftModule.putInfo();
+        frontRightModule.putInfo();
+        backLeftModule.putInfo();
+        backRightModule.putInfo();
 
         SmartDashboard.putNumber("Gyro", gyro.getAngle());
 

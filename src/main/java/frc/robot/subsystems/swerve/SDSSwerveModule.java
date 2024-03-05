@@ -89,7 +89,7 @@ public class SDSSwerveModule {
         drivePIDController.setI(SwerveModuleConstants.kDrivePIDConstants.kI());
         drivePIDController.setD(SwerveModuleConstants.kDrivePIDConstants.kD());
         drivePIDController.setFF(SwerveModuleConstants.kDrivePIDConstants.kV());
-        driveMotor.setSmartCurrentLimit(30);
+        driveMotor.setSmartCurrentLimit(30); // may raise
         driveEncoder.setPositionConversionFactor(SwerveConstants.kDrivePositionConversionFactor);
         driveEncoder.setVelocityConversionFactor(SwerveConstants.kDriveVelocityConversionFactor);
         // driveEncoder.setPositionConversionFactor(1); // TEMPORARY JUST TO CHECK IF ODOMETRY GOES THE RIGHT WAY
@@ -187,7 +187,7 @@ public class SDSSwerveModule {
         drivePIDController.setFF(SwerveModuleConstants.kDrivePIDConstants.kV());
     }
     
-    public void putInfo(String name) {
+    public void putInfo() {
         // moduleNT.getEntry("turnRelPos").setDouble(turnRelEncoder.getPosition());
         // moduleNT.getEntry("turnRelVel").setDouble(turnRelEncoder.getVelocity());
         moduleNT.getEntry("turnAbsPos").setDouble(turnAbsEncoder.getPosition());

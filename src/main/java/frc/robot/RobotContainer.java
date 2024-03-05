@@ -7,12 +7,9 @@ package frc.robot;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.swerve.SwerveDrive;
 
-import java.util.function.BooleanSupplier;
-
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.util.WPILibVersion;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -37,8 +34,9 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    driverController.a().whileTrue(swerveDrive.runTestDrive());
-    driverController.a().onFalse(swerveDrive.runStopDrive());
+    // driverController.a().whileTrue(swerveDrive.runTestDrive());
+    // driverController.a().onFalse(swerveDrive.runStopDrive());
+    driverController.a().onTrue(swerveDrive.runUpdateConstants());
     driverController.y().onTrue(swerveDrive.runZeroGyro());
     driverController.rightBumper().onTrue(swerveDrive.runSetSpeedFactor(0.3));
     driverController.rightBumper().onFalse(swerveDrive.runSetSpeedFactor(1));
