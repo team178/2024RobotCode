@@ -204,10 +204,9 @@ public class SwerveDrive extends SubsystemBase {
 
     public Command runUpdateConstants() {
         return runOnce(() -> {
-            frontLeftModule.updateConstants();
-            frontRightModule.updateConstants();
-            backLeftModule.updateConstants();
-            backRightModule.updateConstants();
+            for(SDSSwerveModule module : modules) {
+                module.updateConstants();
+            }
         });
     }
 
