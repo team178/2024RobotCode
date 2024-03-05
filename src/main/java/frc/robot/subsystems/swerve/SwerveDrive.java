@@ -55,6 +55,8 @@ public class SwerveDrive extends SubsystemBase {
     private MechanismLigament2dWrapper backLeftDirLigament;
     private MechanismLigament2dWrapper backRightDirLigament;
 
+    private double speedFactor;
+
     private Field2d field;
 
     public SwerveDrive() {
@@ -101,6 +103,8 @@ public class SwerveDrive extends SubsystemBase {
     }
 
     private void initMathModels() {
+        speedFactor = 1;
+
         magnitudeAccelLimiter = new RateLimiter(SwerveConstants.kMagAccelLimit);
         directionVelLimiter = new RateLimiter(SwerveConstants.kDirVelLimit, -SwerveConstants.kDirVelLimit, Math.PI / 2);
         rotationAccelLimiter = new RateLimiter(SwerveConstants.kRotAccelLimit);
@@ -192,8 +196,8 @@ public class SwerveDrive extends SubsystemBase {
     public void adjustedDriveInputs(double adjXSpeed, double adjYSpeed, double adjRotSpeed, boolean robotCentric, boolean rateLimited) {
         if(!rateLimited) {
             rawDriveInputs(
-                adjXSpeed * SwerveConstants.kMagVelLimit,
-                adjYSpeed * SwerveConstants.kMagVelLimit,
+                adjXSpeed * SwerveConstants.kMagVelLimit * speedFactor,
+                adjYSpeed * SwerveConstants.kMagVelLimit * speedFactor,
                 adjRotSpeed * SwerveConstants.kRotVelLimit,
                 robotCentric
             );
@@ -201,7 +205,7 @@ public class SwerveDrive extends SubsystemBase {
         }
         double rawMagSpeed = Math.sqrt(Math.pow(adjXSpeed, 2) + Math.pow(adjYSpeed, 2));
         // rawMagSpeed = Math.pow(rawMagSpeed, 3);
-        rawMagSpeed *= SwerveConstants.kMagVelLimit;
+        rawMagSpeed *= SwerveConstants.kMagVelLimit * speedFactor;
         double rawDir = Math.atan2(adjYSpeed, adjXSpeed);
         rawMagSpeed /= Math.abs(Math.cos(rawDir)) + Math.abs(Math.sin(rawDir));
 
@@ -283,6 +287,12 @@ public class SwerveDrive extends SubsystemBase {
     public Command runZeroGyro() {
         return runOnce(() -> {
             gyro.reset();
+        });
+    }
+
+    public Command runSetSpeedFactor(double factor) {
+        return runOnce(() -> {
+            speedFactor = factor;
         });
     }
 

@@ -35,8 +35,8 @@ public class RobotContainer {
     altController = new CommandXboxController(OperatorConstants.kAuxControllerPort);
 
     configureBindings();
-    // CameraServer.startAutomaticCapture();
-    // Shuffleboard.getTab("Camera").add("Camera", CameraServer.getVideo().getSource());
+    CameraServer.startAutomaticCapture();
+    Shuffleboard.getTab("Camera").add("Camera", CameraServer.getVideo().getSource());
   }
 
   private void configureBindings() {
@@ -45,13 +45,8 @@ public class RobotContainer {
     driverController.y().onTrue(swerveDrive.runZeroGyro());
     BooleanSupplier leftBumperSupplier = driverController.leftBumper()::getAsBoolean; // robot centric true or field centric false
 
-    BooleanSupplier altForwardSupplier = altController.leftStick()::getAsBoolean;
-    BooleanSupplier altBackwardSupplier = altController.rightStick()::getAsBoolean;
-    BooleanSupplier altIndexSupplier = altController.leftBumper()::getAsBoolean;
-    BooleanSupplier altFlatPosSupplier = altController.rightBumper()::getAsBoolean;
-    BooleanSupplier altSpeakerPosSupplier = altController.rightTrigger()::getAsBoolean;
-    BooleanSupplier altAmpPosSupplier = () -> false;
-
+    driverController.rightTrigger().onTrue(swerveDrive.runSetSpeedFactor(0.15));
+    driverController.rightTrigger().onFalse(swerveDrive.runSetSpeedFactor(1));
     swerveDrive.setDefaultCommand(swerveDrive.runDriveInputs(
       driverController::getLeftY,
       driverController::getLeftX,
