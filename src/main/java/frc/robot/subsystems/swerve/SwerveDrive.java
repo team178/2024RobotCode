@@ -44,6 +44,7 @@ public class SwerveDrive extends SubsystemBase {
     private SDSSwerveModule frontRightModule;
     private SDSSwerveModule backLeftModule;
     private SDSSwerveModule backRightModule;
+    private SDSSwerveModule[] modules;
 
     private Pigeon2 gyro;
 
@@ -105,6 +106,7 @@ public class SwerveDrive extends SubsystemBase {
             new Rotation2d(2.57),
             true
         );
+        modules = new SDSSwerveModule[] {frontLeftModule, frontRightModule, backLeftModule, backRightModule};
 
         gyro = new Pigeon2(SwerveConstants.kPigeonCanID);
         gyro.reset();
