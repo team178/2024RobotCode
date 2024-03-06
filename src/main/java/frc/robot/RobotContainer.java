@@ -76,8 +76,8 @@ public class RobotContainer {
     altController.y().onTrue(shooter.runSetWristPosition(ShooterPosition.AMP));
     altController.a().onTrue(shooter.runSetWristPosition(ShooterPosition.SOURCE));
     altController.b().onTrue(shooter.runSetWristPosition(ShooterPosition.FLAT));
-    altController.leftStick().onTrue(shooter.runShooter(20));
-    altController.leftStick().onFalse(shooter.runShooter(0));
+    altController.rightStick().onTrue(shooter.runShooter(20));
+    altController.rightStick().onFalse(shooter.runShooter(0));
     // altController.rightStick().onTrue(shooter.runShooter(20));
     // altController.rightStick().onFalse(shooter.runShooter(0));
     altController.leftBumper().onTrue(shooter.runIndex(-10));
