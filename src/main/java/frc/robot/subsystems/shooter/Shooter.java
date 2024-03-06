@@ -270,5 +270,8 @@ public class Shooter extends SubsystemBase {
         shooterNT.getEntry("lowerlimit").setBoolean(lowerLimit.get());
         shooterNT.getEntry("speedfactor").setDouble(speedFactor);
         shooterNT.getEntry("shooterposition").setString(shooterPosition.toString());
+        shooterNT.getEntry("lowspeed").setDouble(shooterLowerMotor.getEncoder().getVelocity());
+        shooterNT.getEntry("upspeed").setDouble(shooterUpperMotor.getEncoder().getVelocity());
+        shooterNT.getEntry("indexspeed").setDouble(indexMotor.getEncoder().getVelocity());
    }
 }
