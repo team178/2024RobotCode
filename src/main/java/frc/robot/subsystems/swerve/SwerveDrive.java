@@ -84,28 +84,28 @@ public class SwerveDrive extends SubsystemBase {
             "0 Front Left",
             SwerveConstants.kFrontLeftTurningCanID,
             SwerveConstants.kFrontLeftDrivingCanID,
-            new Rotation2d(0.87),
+            new Rotation2d(0.8749),
             true
         );
         frontRightModule = new SDSSwerveModule(
             "1 Front Right",
             SwerveConstants.kFrontRightTurningCanID,
             SwerveConstants.kFrontRightDrivingCanID,
-            new Rotation2d(3.63),
+            new Rotation2d(3.6038),
             true
         );
         backLeftModule = new SDSSwerveModule(
             "2 Back Left",
             SwerveConstants.kBackLeftTurningCanID,
             SwerveConstants.kBackLeftDrivingCanID,
-            new Rotation2d(3.16),
+            new Rotation2d(3.1532),
             true
         );
         backRightModule = new SDSSwerveModule(
             "3 Back Right",
             SwerveConstants.kBackRightTurningCanID,
             SwerveConstants.kBackRightDrivingCanID,
-            new Rotation2d(2.57),
+            new Rotation2d(2.5972),
             true
         );
         modules = new SDSSwerveModule[] {frontLeftModule, frontRightModule, backLeftModule, backRightModule};
@@ -130,7 +130,7 @@ public class SwerveDrive extends SubsystemBase {
 
         swerveOdometry = new SwerveDrivePoseEstimator(
             SwerveConstants.kSwerveKinematics,
-            gyro.getRotation2d().times(-1), new SwerveModulePosition[]{
+            gyro.getRotation2d(), new SwerveModulePosition[]{
                 frontLeftModule.getPosition(),
                 frontRightModule.getPosition(),
                 backLeftModule.getPosition(),
@@ -286,7 +286,7 @@ public class SwerveDrive extends SubsystemBase {
 
     public void rawDriveInputs(double rawXSpeed, double rawYSpeed, double rawRotSpeed, boolean noOptimize, boolean robotCentric) {
         SwerveModuleState[] states = SwerveConstants.kSwerveKinematics.toSwerveModuleStates(!robotCentric ?
-            ChassisSpeeds.fromFieldRelativeSpeeds(rawXSpeed, rawYSpeed, rawRotSpeed, gyro.getRotation2d().times(-1)) : // see if gyro is done correctly 
+            ChassisSpeeds.fromFieldRelativeSpeeds(rawXSpeed, rawYSpeed, rawRotSpeed, gyro.getRotation2d()) : // see if gyro is done correctly 
             new ChassisSpeeds(rawXSpeed, rawYSpeed, rawRotSpeed)
         );
         // System.out.println(rawXSpeed + " " + rawYSpeed + " " + rawRotSpeed);
@@ -352,8 +352,9 @@ public class SwerveDrive extends SubsystemBase {
 
     public Command runTestDrive() {
         return runOnce(() -> {
-            SwerveModuleState testSwerveState = new SwerveModuleState(Preferences.getDouble("kSwerveTestDrive", SwerveConstants.kDefaultTestDrive),
-            new Rotation2d(Preferences.getDouble("kSwerveTestTurn", SwerveConstants.kDefaultTestTurn))
+            SwerveModuleState testSwerveState = new SwerveModuleState(
+                Preferences.getDouble("kSwerveTestDrive", SwerveConstants.kDefaultTestDrive),
+                new Rotation2d(Preferences.getDouble("kSwerveTestTurn", SwerveConstants.kDefaultTestTurn))
             );
             frontLeftModule.setDesiredSwerveState(testSwerveState);
             // frontRightModule.setDesiredSwerveState(testSwerveState);
@@ -425,9 +426,9 @@ public class SwerveDrive extends SubsystemBase {
         backLeftModule.putInfo();
         backRightModule.putInfo();
         
-        SmartDashboard.putNumber("Gyro", gyro.getAngle());
+        SmartDashboard.putNumber("Gyro", -gyro.getAngle());
         
-        Rotation2d robotRotation = Rotation2d.fromDegrees(-gyro.getAngle());
+        Rotation2d robotRotation = gyro.getRotation2d();
         if(DriverStation.getAlliance().equals(Optional.of(Alliance.Blue))) robotRotation = robotRotation.rotateBy(Rotation2d.fromDegrees(180));
         swerveOdometry.update(
             robotRotation,
