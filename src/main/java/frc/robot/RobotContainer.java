@@ -67,6 +67,6 @@ public class RobotContainer {
     DriveTrajectory testPath = new DriveTrajectory("New Path", swerveDrive, Rotation2d.fromDegrees(180));
     swerveDrive.resetPose(testPath.getStartPose());
     // return testPath;
-    return Commands.print("No current auto configured");
+    return testPath;
   }
 }
