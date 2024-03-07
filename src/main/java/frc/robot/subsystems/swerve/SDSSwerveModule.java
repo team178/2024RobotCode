@@ -162,7 +162,15 @@ public class SDSSwerveModule {
         return turnAbsEncoder.getPosition();
     }
 
-    public SwerveModuleState getDesiredSwerveState() {
+    public SwerveModuleState getCurrentModuleState() {
+        return new SwerveModuleState(
+            driveEncoder.getVelocity(),
+            Rotation2d.fromRadians(getAbsTurnPos()).minus(chassisAngularOffset)
+                // .minus(Rotation2d.fromDegrees(90)) // maybe dont minus, will need to check
+        );
+    }
+
+    public SwerveModuleState getDesiredModuleState() {
         return desiredSwerveState;
     }
 

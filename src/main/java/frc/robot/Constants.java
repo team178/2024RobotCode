@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Preferences;
 import frc.robot.util.SparkPIDConstants;
@@ -18,7 +20,7 @@ import frc.robot.util.SparkPIDConstants;
  */
 public final class Constants {
   public static class SwerveConstants { // all swerve on CAN ID range 1-9
-    public static final double kWheelDistanceMeters = Units.inchesToMeters(19.625); //! to be set
+    public static final double kWheelDistanceMeters = Units.inchesToMeters(19.625); //! double check
     
     public static final int kFrontLeftDrivingCanID = 1;
     public static final int kFrontLeftTurningCanID = 5;
@@ -53,6 +55,13 @@ public final class Constants {
 
     public static final double kDefaultTestTurn = 0;
     public static final double kDefaultTestDrive = 0;
+
+    public static final SwerveDriveKinematics kSwerveKinematics = new SwerveDriveKinematics( //! make sure these are the right order, FRONT left right, BACK left right
+      new Translation2d(-SwerveConstants.kWheelDistanceMeters / 2, SwerveConstants.kWheelDistanceMeters / 2),
+      new Translation2d(SwerveConstants.kWheelDistanceMeters / 2, SwerveConstants.kWheelDistanceMeters / 2), // I REALLY DONT KNOW ANYMORE
+      new Translation2d(-SwerveConstants.kWheelDistanceMeters / 2, -SwerveConstants.kWheelDistanceMeters / 2),
+      new Translation2d(SwerveConstants.kWheelDistanceMeters / 2, -SwerveConstants.kWheelDistanceMeters / 2)
+    );
 
     public static void initSwerveDrivePreferences() {
       Preferences.initDouble("kSwerveTestTurn", kDefaultTestTurn);

@@ -30,6 +30,8 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.SwerveConstants;
+import frc.robot.commands.Autos;
+import frc.robot.commands.DriveTrajectory;
 import frc.robot.util.MechanismLigament2dWrapper;
 import frc.robot.util.RateLimiter;
 
@@ -125,21 +127,22 @@ public class SwerveDrive extends SubsystemBase {
             new Translation2d(-SwerveConstants.kWheelDistanceMeters / 2, -SwerveConstants.kWheelDistanceMeters / 2),
             new Translation2d(SwerveConstants.kWheelDistanceMeters / 2, -SwerveConstants.kWheelDistanceMeters / 2)
         );
+
         swerveOdometry = new SwerveDrivePoseEstimator(
-            swerveKinematics,
-            Rotation2d.fromDegrees(-gyro.getAngle()), new SwerveModulePosition[]{
+            SwerveConstants.kSwerveKinematics,
+            gyro.getRotation2d().times(-1), new SwerveModulePosition[]{
                 frontLeftModule.getPosition(),
                 frontRightModule.getPosition(),
                 backLeftModule.getPosition(),
                 backRightModule.getPosition()
             },
-            ((DriverStation.getAlliance().equals(Alliance.Blue)) ?
+            ((DriverStation.getAlliance().equals(Optional.of(Alliance.Blue))) ?
             new Pose2d(16.542, 8.221, Rotation2d.fromDegrees(180)) :
-            new Pose2d())
+            new Pose2d(0, 0, Rotation2d.fromDegrees(0)))
         );
         
 
-        swerveKinematics.toSwerveModuleStates(new ChassisSpeeds(0, 0.01, 0));
+        SwerveConstants.kSwerveKinematics.toSwerveModuleStates(new ChassisSpeeds(0, 0.01, 0));
     }
 
     private void initSimulations() {
@@ -148,10 +151,10 @@ public class SwerveDrive extends SubsystemBase {
         backLeftLigament = new MechanismLigament2dWrapper("backLeftWheel", 0, 90, 5, new Color8Bit(Color.kYellow));
         backRightLigament = new MechanismLigament2dWrapper("backRightWheel", 0, 180, 5, new Color8Bit(Color.kPurple));
 
-        frontLeftDirLigament = new MechanismLigament2dWrapper("frontLeftWheelDir", 0.4, 0, 3, new Color8Bit(Color.kGreen));
-        frontRightDirLigament = new MechanismLigament2dWrapper("frontRightWheelDir", 0.4, 90, 3, new Color8Bit(Color.kGreen));
-        backLeftDirLigament = new MechanismLigament2dWrapper("backLeftWheelDir", 0.4, 90, 3, new Color8Bit(Color.kGreen));
-        backRightDirLigament = new MechanismLigament2dWrapper("backRightWheelDir", 0.4, 180, 3, new Color8Bit(Color.kGreen));
+        frontLeftDirLigament = new MechanismLigament2dWrapper("frontLeftWheelDir", 0.1, 0, 3, new Color8Bit(Color.kGreen));
+        frontRightDirLigament = new MechanismLigament2dWrapper("frontRightWheelDir", 0.1, 90, 3, new Color8Bit(Color.kGreen));
+        backLeftDirLigament = new MechanismLigament2dWrapper("backLeftWheelDir", 0.1, 90, 3, new Color8Bit(Color.kGreen));
+        backRightDirLigament = new MechanismLigament2dWrapper("backRightWheelDir", 0.1, 180, 3, new Color8Bit(Color.kGreen));
         
         swerveVisualizer = new Mechanism2d(10, 10);
         MechanismRoot2d root = swerveVisualizer.getRoot("root", 2, 2);
@@ -175,8 +178,7 @@ public class SwerveDrive extends SubsystemBase {
         field.setRobotPose(new Pose2d(1, 1, new Rotation2d(0)));
         
         SmartDashboard.putData("Swerve Visualization", swerveVisualizer);
-        SmartDashboard.putData("Field", field);
-        
+        SmartDashboard.putData("Field", field);   
     }
 
     /**
@@ -283,11 +285,27 @@ public class SwerveDrive extends SubsystemBase {
     }
 
     public void rawDriveInputs(double rawXSpeed, double rawYSpeed, double rawRotSpeed, boolean noOptimize, boolean robotCentric) {
-        SwerveModuleState[] states = swerveKinematics.toSwerveModuleStates(!robotCentric ?
-            ChassisSpeeds.fromFieldRelativeSpeeds(rawXSpeed, rawYSpeed, rawRotSpeed, Rotation2d.fromDegrees(-gyro.getAngle())) : // see if gyro is done correctly 
+        SwerveModuleState[] states = SwerveConstants.kSwerveKinematics.toSwerveModuleStates(!robotCentric ?
+            ChassisSpeeds.fromFieldRelativeSpeeds(rawXSpeed, rawYSpeed, rawRotSpeed, gyro.getRotation2d().times(-1)) : // see if gyro is done correctly 
             new ChassisSpeeds(rawXSpeed, rawYSpeed, rawRotSpeed)
         );
         // System.out.println(rawXSpeed + " " + rawYSpeed + " " + rawRotSpeed);
+        rawModuleInputs(states, noOptimize);
+    }
+
+    public void runChassisSpeeds(ChassisSpeeds speeds) {
+        rawModuleInputs(SwerveConstants.kSwerveKinematics.toSwerveModuleStates(speeds));
+    }
+
+    public void rawModuleInputs(SwerveModuleState[] states) {
+        rawModuleInputs(states, false);
+    }
+
+    public void rawModuleInputs(SwerveModuleState[] states, boolean noOptimize) {
+        if(states.length != 4) {
+            System.out.println("WARNING: SwerveDrive.rawModuleInputs() received the incorrect number of swerve module states!");
+            return;
+        }
         SwerveDriveKinematics.desaturateWheelSpeeds(states, SwerveConstants.kMaxWheelSpeed);
 
         frontLeftLigament.setLength(states[0].speedMetersPerSecond / 6);
@@ -323,7 +341,48 @@ public class SwerveDrive extends SubsystemBase {
         backLeftModule.setDesiredSwerveState(states[2], !noOptimize);
         backRightModule.setDesiredSwerveState(states[3], !noOptimize);
     }
+    
+    public void resetPose(Pose2d pose) {
+        swerveOdometry.resetPosition(
+            gyro.getRotation2d(),
+            getModulePositions(),
+            pose
+        );
+    }
 
+    public Command runTestDrive() {
+        return runOnce(() -> {
+            SwerveModuleState testSwerveState = new SwerveModuleState(Preferences.getDouble("kSwerveTestDrive", SwerveConstants.kDefaultTestDrive),
+            new Rotation2d(Preferences.getDouble("kSwerveTestTurn", SwerveConstants.kDefaultTestTurn))
+            );
+            frontLeftModule.setDesiredSwerveState(testSwerveState);
+            // frontRightModule.setDesiredSwerveState(testSwerveState);
+            // backLeftModule.setDesiredSwerveState(testSwerveState);
+            // backRightModule.setDesiredSwerveState(testSwerveState);
+        });
+    }
+    
+    public Command runStopDrive() {
+        return runOnce(() -> {
+            frontLeftModule.stopDrive();
+            frontRightModule.stopDrive();
+            backLeftModule.stopDrive();
+            backRightModule.stopDrive();
+        });
+    }
+    
+    public Command runZeroGyro() {
+        return runOnce(() -> {
+            gyro.reset();
+        });
+    }
+    
+    public Command runSetSpeedFactor(double factor) {
+        return runOnce(() -> {
+            speedFactor = factor;
+        });
+    }
+    
     public SwerveModulePosition[] getModulePositions() {
         return new SwerveModulePosition[] {
             frontLeftModule.getPosition(),
@@ -333,65 +392,41 @@ public class SwerveDrive extends SubsystemBase {
         };
     }
 
-    public void resetPose(Pose2d pose, Rotation2d rot) {
-        swerveOdometry.resetPosition(
-            rot,
-            getModulePositions(),
-            pose
-        );
+    public SwerveModuleState[] getModuleStates() {
+        return new SwerveModuleState[] {
+            frontLeftModule.getCurrentModuleState(),
+            frontRightModule.getCurrentModuleState(),
+            backLeftModule.getCurrentModuleState(),
+            backRightModule.getCurrentModuleState()
+        };
     }
-
-    public Command runTestDrive() {
-        return runOnce(() -> {
-            SwerveModuleState testSwerveState = new SwerveModuleState(Preferences.getDouble("kSwerveTestDrive", SwerveConstants.kDefaultTestDrive),
-                new Rotation2d(Preferences.getDouble("kSwerveTestTurn", SwerveConstants.kDefaultTestTurn))
-            );
-            frontLeftModule.setDesiredSwerveState(testSwerveState);
-            // frontRightModule.setDesiredSwerveState(testSwerveState);
-            // backLeftModule.setDesiredSwerveState(testSwerveState);
-            // backRightModule.setDesiredSwerveState(testSwerveState);
-        });
-    }
-
-    public Command runStopDrive() {
-        return runOnce(() -> {
-           frontLeftModule.stopDrive();
-           frontRightModule.stopDrive();
-           backLeftModule.stopDrive();
-           backRightModule.stopDrive();
-        });
-    }
-
-    public Command runZeroGyro() {
-        return runOnce(() -> {
-            gyro.reset();
-        });
-    }
-
-    public Command runSetSpeedFactor(double factor) {
-        return runOnce(() -> {
-            speedFactor = factor;
-        });
-    }
-
+    
     public SwerveDriveKinematics getSwerveKinematics() {
         return swerveKinematics;
     }
-
+    
+    public Pose2d getPose() {
+        return swerveOdometry.getEstimatedPosition();
+    }
+    
+    public ChassisSpeeds getRobotRelativeChassisSpeeds() {
+        return SwerveConstants.kSwerveKinematics.toChassisSpeeds(getModuleStates());
+    }
+    
     @Override
     public void periodic() {
         // frontLeftModule.updateConstants();
         // frontRightModule.updateConstants();
         // backLeftModule.updateConstants();
         // backRightModule.updateConstants();
-
+        
         frontLeftModule.putInfo();
         frontRightModule.putInfo();
         backLeftModule.putInfo();
         backRightModule.putInfo();
-
+        
         SmartDashboard.putNumber("Gyro", gyro.getAngle());
-
+        
         Rotation2d robotRotation = Rotation2d.fromDegrees(-gyro.getAngle());
         if(DriverStation.getAlliance().equals(Optional.of(Alliance.Blue))) robotRotation = robotRotation.rotateBy(Rotation2d.fromDegrees(180));
         swerveOdometry.update(
@@ -401,6 +436,8 @@ public class SwerveDrive extends SubsystemBase {
         field.setRobotPose(swerveOdometry.getEstimatedPosition());
         swerveDriveNT.getEntry("poseX").setDouble(swerveOdometry.getEstimatedPosition().getX());
         swerveDriveNT.getEntry("poseY").setDouble(swerveOdometry.getEstimatedPosition().getY());
-        SmartDashboard.putData(field);
+        SmartDashboard.putData("Field", field);
+        SmartDashboard.putData("Auto Visualization", Autos.autoField);
+        DriveTrajectory.updateField();
     }
 }

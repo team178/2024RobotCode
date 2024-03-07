@@ -5,9 +5,13 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.AutoCommand;
+import frc.robot.commands.DriveTrajectory;
+import frc.robot.commands.auto.MidDoubleAuto;
 import frc.robot.subsystems.swerve.SwerveDrive;
 
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -29,8 +33,8 @@ public class RobotContainer {
     altController = new CommandXboxController(OperatorConstants.kAuxControllerPort);
 
     configureBindings();
-    // CameraServer.startAutomaticCapture();
-    // Shuffleboard.getTab("Camera").add("Camera", CameraServer.getVideo().getSource());
+    CameraServer.startAutomaticCapture();
+    Shuffleboard.getTab("Camera").add("Camera", CameraServer.getVideo().getSource());
   }
 
   private void configureBindings() {
@@ -60,6 +64,9 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return Commands.run(() -> {});
+    DriveTrajectory testPath = new DriveTrajectory("New Path", swerveDrive, Rotation2d.fromDegrees(180));
+    swerveDrive.resetPose(testPath.getStartPose());
+    // return testPath;
+    return Commands.print("No current auto configured");
   }
 }
