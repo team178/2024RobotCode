@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Preferences;
 import frc.robot.util.SparkPIDConstants;
@@ -18,7 +20,7 @@ import frc.robot.util.SparkPIDConstants;
  */
 public final class Constants {
   public static class SwerveConstants { // all swerve on CAN ID range 1-9
-    public static final double kWheelDistanceMeters = Units.inchesToMeters(19.625); //! to be set
+    public static final double kWheelDistanceMeters = Units.inchesToMeters(19.625); //! double check
     
     public static final int kFrontLeftDrivingCanID = 1;
     public static final int kFrontLeftTurningCanID = 5;
@@ -35,13 +37,14 @@ public final class Constants {
     public static final int kPigeonCanID = 9;
 
     public static final double kSRXMagEncoderCPR = 4096; // may be 1024
-    public static final double kTurnPositionConversionFactor = Units.rotationsToRadians(1 / kSRXMagEncoderCPR);
+    public static final double kTurnRelPositionConversionFactor = Units.rotationsToRadians(1 / kSRXMagEncoderCPR);
 
     public static final double kDriveGearRatio = 6.75 / 1; // rotations on input per rotations on output
     public static final double kInternalNEOEncoderCPR = 42 / 1; // counts on encoder per rotation
     public static final double kWheelMetersPerRotation = Units.inchesToMeters(Math.PI * 4); // meters per rotation (wheel circumference)
     public static final double kDriveVelocityConversionFactor = kWheelMetersPerRotation / (kDriveGearRatio * kInternalNEOEncoderCPR); //!This MAY BE meters/min
-    public static final double kDrivePositionConversionFactor = kWheelMetersPerRotation / (kDriveGearRatio * kInternalNEOEncoderCPR);
+    public static final double kDrivePositionConversionFactor = kDriveGearRatio * kWheelMetersPerRotation / (kInternalNEOEncoderCPR); // meters per count
+    public static final double kTurnAbsPositionConversionFactor = Units.rotationsToRadians(1);
 
     public static final double kMaxWheelSpeed = 8; // m/s
     public static final double kMagVelLimit = 6; // m/s
@@ -52,6 +55,13 @@ public final class Constants {
 
     public static final double kDefaultTestTurn = 0;
     public static final double kDefaultTestDrive = 0;
+
+    public static final SwerveDriveKinematics kSwerveKinematics = new SwerveDriveKinematics( //! make sure these are the right order, FRONT left right, BACK left right
+      new Translation2d(-SwerveConstants.kWheelDistanceMeters / 2, SwerveConstants.kWheelDistanceMeters / 2),
+      new Translation2d(SwerveConstants.kWheelDistanceMeters / 2, SwerveConstants.kWheelDistanceMeters / 2), // I REALLY DONT KNOW ANYMORE
+      new Translation2d(-SwerveConstants.kWheelDistanceMeters / 2, -SwerveConstants.kWheelDistanceMeters / 2),
+      new Translation2d(SwerveConstants.kWheelDistanceMeters / 2, -SwerveConstants.kWheelDistanceMeters / 2)
+    );
 
     public static void initSwerveDrivePreferences() {
       Preferences.initDouble("kSwerveTestTurn", kDefaultTestTurn);
@@ -77,7 +87,7 @@ public final class Constants {
 
     public static final SparkPIDConstants kTurnPIDConstants = new SparkPIDConstants(
       "SwerveModuleTurn",
-      0.2,
+      0.3,
       0, // 0.0001
       0,
       0

@@ -7,11 +7,13 @@ package frc.robot;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterPosition;
+import frc.robot.commands.AutoCommand;
+import frc.robot.commands.DriveTrajectory;
+import frc.robot.commands.auto.MidDoubleAuto;
 import frc.robot.subsystems.swerve.SwerveDrive;
 
-import java.util.function.BooleanSupplier;
-
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -42,27 +44,21 @@ public class RobotContainer {
   private void configureBindings() {
     // driverController.a().whileTrue(swerveDrive.runTestDrive());
     // driverController.a().onFalse(swerveDrive.runStopDrive());
+    
+    driverController.a().onTrue(swerveDrive.runUpdateConstants());
     driverController.y().onTrue(swerveDrive.runZeroGyro());
-    BooleanSupplier leftBumperSupplier = driverController.leftBumper()::getAsBoolean; // robot centric true or field centric false
 
     driverController.rightTrigger().onTrue(swerveDrive.runSetSpeedFactor(0.15));
     driverController.rightTrigger().onFalse(swerveDrive.runSetSpeedFactor(1));
     swerveDrive.setDefaultCommand(swerveDrive.runDriveInputs(
-      driverController::getLeftY,
       driverController::getLeftX,
+      driverController::getLeftY,
       driverController::getRightX, // use in real robot
       // altController::getLeftX, //use in simulation
-      leftBumperSupplier,
+      driverController.leftBumper()::getAsBoolean,
+      driverController.rightTrigger()::getAsBoolean,
       true
     ));
-    // shooter.setDefaultCommand(shooter.runAll(
-    //   altForwardSupplier,
-    //   altBackwardSupplier,
-    //   altIndexSupplier,
-    //   altFlatPosSupplier,
-    //   altSpeakerPosSupplier,
-    //   altAmpPosSupplier
-    // ));
     
     // altController.rightBumper().onTrue(shooter.runSetToTest(true));
     // altController.rightBumper().onFalse(shooter.runSetToTest(false));
@@ -70,6 +66,7 @@ public class RobotContainer {
     // altController.rightTrigger().onFalse(shooter.runSetToSetpoint(false));
     // altController.rightBumper().whileTrue(shooter.runSetSpeedFactor(1));
     // altController.rightBumper().whileFalse(shooter.runSetSpeedFactor(0.3));
+
     altController.povUp().whileTrue(shooter.runBumpSetpoint(0.15));
     altController.povDown().whileTrue(shooter.runBumpSetpoint(-0.15));
     altController.x().onTrue(shooter.runSetWristPosition(ShooterPosition.SPEAKER));
@@ -78,8 +75,6 @@ public class RobotContainer {
     altController.b().onTrue(shooter.runSetWristPosition(ShooterPosition.FLAT));
     altController.rightStick().onTrue(shooter.runShooter(20));
     altController.rightStick().onFalse(shooter.runShooter(0));
-    // altController.rightStick().onTrue(shooter.runShooter(20));
-    // altController.rightStick().onFalse(shooter.runShooter(0));
     altController.leftBumper().onTrue(shooter.runIndex(-10));
     altController.leftBumper().onFalse(shooter.runIndex(0));
     altController.leftTrigger().onTrue(shooter.runIndex(10));
@@ -87,6 +82,9 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return Commands.run(() -> {});
+    DriveTrajectory testPath = new DriveTrajectory("New Path", swerveDrive, Rotation2d.fromDegrees(180));
+    swerveDrive.resetPose(testPath.getStartPose());
+    // return testPath;
+    return Commands.print("No current auto configured");
   }
 }

@@ -174,30 +174,6 @@ public class Shooter extends SubsystemBase {
         });
     }
 
-    public Command runAll(
-        BooleanSupplier forward, BooleanSupplier backward,
-        BooleanSupplier index,
-        BooleanSupplier flat, BooleanSupplier speaker, BooleanSupplier amp) {
-        return run(() -> {
-            // double ind = index.getAsBoolean() ? -6 : 0;
-            // double shoot = forward.getAsBoolean() ? -20 : (backward.getAsBoolean() ? 20 : 0);
-
-            // setIndexVolts(ind);
-            // setShootVolts(shoot);
-
-            // ShooterPosition newPosition = shooterPosition;
-            // if(flat.getAsBoolean()) {
-            //     shooterPosition = ShooterPosition.FLAT;
-            // } else if(speaker.getAsBoolean()) {
-            //     shooterPosition = ShooterPosition.SPEAKER;
-            // } else if(amp.getAsBoolean()) {
-            //     shooterPosition = ShooterPosition.AMP;
-            // }
-            // shooterPosition = newPosition;
-            // setWristPosition(newPosition);
-        });
-    }
-
     public Command runAmp() {
         return Commands.sequence(
             

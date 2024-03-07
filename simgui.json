@@ -11,11 +11,46 @@
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
+      "/SmartDashboard/Auto Visualization": "Field2d",
       "/SmartDashboard/Field": "Field2d",
-      "/SmartDashboard/Swerve Visualization": "Mechanism2d"
+      "/SmartDashboard/Swerve Visualization": "Mechanism2d",
+      "/SmartDashboard/Trajectory Field": "Field2d"
     },
     "windows": {
+      "/SmartDashboard/Auto Visualization": {
+        "bottom": 1476,
+        "height": 8.210550308227539,
+        "left": 150,
+        "right": 2961,
+        "top": 79,
+        "width": 16.541748046875,
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Field": {
+        "bottom": 1476,
+        "height": 8.210550308227539,
+        "left": 150,
+        "right": 2961,
+        "top": 79,
+        "width": 16.541748046875,
+        "window": {
+          "visible": true
+        }
+      },
       "/SmartDashboard/Swerve Visualization": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Trajectory Field": {
+        "bottom": 1476,
+        "height": 8.210550308227539,
+        "left": 150,
+        "right": 2961,
+        "top": 79,
+        "width": 16.541748046875,
         "window": {
           "visible": true
         }
@@ -27,8 +62,38 @@
       "open": false
     },
     "transitory": {
+      "Shuffleboard": {
+        "open": true
+      },
+      "SmartDashboard": {
+        "auto": {
+          "open": true
+        },
+        "open": true
+      },
+      "Swerve Drive": {
+        "13 Desired Back Right": {
+          "open": true
+        },
+        "Calculations": {
+          "open": true
+        },
+        "Desired Back Left": {
+          "open": true
+        },
+        "Desired Back Right": {
+          "open": true
+        },
+        "Desired Front Left": {
+          "open": true
+        },
+        "Desired Front Right": {
+          "open": true
+        },
+        "open": true
+      },
       "Swerve Modules": {
-        "2 Back Left": {
+        "3 Back Right": {
           "open": true
         },
         "open": true
@@ -43,5 +108,49 @@
       "open": true
     },
     "visible": true
+  },
+  "Plot": {
+    "Plot <0>": {
+      "plots": [
+        {
+          "backgroundColor": [
+            0.05999999865889549,
+            0.05999999865889549,
+            0.05999999865889549,
+            0.9399999976158142
+          ],
+          "height": 332,
+          "series": [
+            {
+              "color": [
+                0.2980392277240753,
+                0.44705885648727417,
+                0.6901960968971252,
+                1.0
+              ],
+              "id": "NT:/SmartDashboard/auto/rot"
+            },
+            {
+              "color": [
+                0.8666667342185974,
+                0.5176470875740051,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:/SmartDashboard/auto/x"
+            },
+            {
+              "color": [
+                0.3333333432674408,
+                0.658823549747467,
+                0.4078431725502014,
+                1.0
+              ],
+              "id": "NT:/SmartDashboard/auto/y"
+            }
+          ]
+        }
+      ]
+    }
   }
 }
