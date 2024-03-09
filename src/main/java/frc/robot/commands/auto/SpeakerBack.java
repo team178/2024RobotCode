@@ -13,14 +13,22 @@ public class SpeakerBack extends AutoCommand {
     public SpeakerBack(SwerveDrive swerve, Shooter shooter) {
         addCommands(
             Autos.runSpeakerShot(shooter),
+            swerve.runSetGyroAngle(Rotation2d.fromDegrees(180)),
             new WaitCommand(1),
             Commands.runOnce(() -> {
-                swerve.rawDriveInputs(0, -2, 0, false, false);
+                swerve.rawDriveInputs(0, 2, 0, false, false);
             }, swerve),
             new WaitCommand(0.7),
-            Commands.runOnce(() -> {
-                swerve.rawDriveInputs(0, 0, 0, false, false);
+            Commands.run(() -> {
+                swerve.rawDriveInputs(0, 0, -1.5, false, false);
+                System.out.println(Math.abs(swerve.getRotation2d().getDegrees() % 360));
             }, swerve)
+                .until(() ->
+                    (Math.abs(swerve.getRotation2d().getDegrees() % 360) < 5)
+                )
+                .andThen(() -> {
+                    swerve.rawDriveInputs(0, 0, 0, false, false);
+                }, swerve)
         );
         addRequirements(swerve, shooter);
     }

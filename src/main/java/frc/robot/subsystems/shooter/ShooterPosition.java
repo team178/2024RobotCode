@@ -3,7 +3,7 @@ package frc.robot.subsystems.shooter;
 public enum ShooterPosition {
     FLAT("FLAT", 19.5),
     AMP("AMP", 90), // prev 108.7
-    SPEAKER("SPEAKER", 62.9),
+    SPEAKER("SPEAKER", 64),
     SOURCE("SOURCE", 49);
     // amp or speaker shooting method adjusted if needed could work for trap
     

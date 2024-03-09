@@ -376,6 +376,12 @@ public class SwerveDrive extends SubsystemBase {
             gyro.reset();
         });
     }
+
+    public Command runSetGyroAngle(Rotation2d rot) { // ccw+ ?
+        return runOnce(() -> {
+            gyro.setYaw(rot.getDegrees());
+        });
+    }
     
     public Command runSetSpeedFactor(double factor) {
         return runOnce(() -> {
@@ -407,6 +413,10 @@ public class SwerveDrive extends SubsystemBase {
     
     public Pose2d getPose() {
         return swerveOdometry.getEstimatedPosition();
+    }
+
+    public Rotation2d getRotation2d() {
+        return gyro.getRotation2d();
     }
     
     public ChassisSpeeds getRobotRelativeChassisSpeeds() {

@@ -30,11 +30,11 @@ public class Autos {
     public static final SendableChooser<AutoCommand> autoChooser = new SendableChooser<>();
     public static final Field2d autoField = new Field2d();
 
-    public static final void initAutos(SwerveDrive swerveDrive, Shooter shooter) {
-        autoChooser.addOption("Speaker Back", new SpeakerBack(swerveDrive, shooter));
-        autoChooser.setDefaultOption("Shoot Only", new ShootOnly(shooter));
+    public static final void initAutos(SwerveDrive swerve, Shooter shooter) {
+        autoChooser.addOption("Speaker Back", new SpeakerBack(swerve, shooter));
+        autoChooser.setDefaultOption("Shoot Only", new ShootOnly(swerve, shooter));
         // autoChooser.addOption("Shoot Only", new SpeakerOnly(shooter));
-        autoChooser.addOption("Do Nothing", new NothingAuto());
+        autoChooser.addOption("Do Nothing", new NothingAuto(swerve));
         // autoChooser.addOption("Mid Double Auto", new MidDoubleAuto(swerveDrive));
         Shuffleboard.getTab("Autos")
             .add("Auto", autoChooser)
