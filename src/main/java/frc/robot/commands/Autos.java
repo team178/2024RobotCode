@@ -10,18 +10,36 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.commands.auto.MidDoubleAuto;
+import frc.robot.commands.auto.NothingAuto;
+import frc.robot.commands.auto.ShootOnly;
+import frc.robot.commands.auto.SpeakerBack;
+import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShooterPosition;
 import frc.robot.subsystems.swerve.SwerveDrive;
 
 public class Autos {
     public static final SendableChooser<AutoCommand> autoChooser = new SendableChooser<>();
     public static final Field2d autoField = new Field2d();
 
-    public static final void initAutos(SwerveDrive swerveDrive) {
-        autoChooser.addOption("Mid Double Auto", new MidDoubleAuto(swerveDrive));
+    public static final void initAutos(SwerveDrive swerveDrive, Shooter shooter) {
+        autoChooser.addOption("Speaker Back", new SpeakerBack(swerveDrive, shooter));
+        autoChooser.setDefaultOption("Shoot Only", new ShootOnly(shooter));
+        // autoChooser.addOption("Shoot Only", new SpeakerOnly(shooter));
+        autoChooser.addOption("Do Nothing", new NothingAuto());
+        // autoChooser.addOption("Mid Double Auto", new MidDoubleAuto(swerveDrive));
+        Shuffleboard.getTab("Autos")
+            .add("Auto", autoChooser)
+            .withWidget(BuiltInWidgets.kSplitButtonChooser)
+            .withSize(9, 1);
     }
 
     public static Trajectory convertFromPathPlanner(PathPlannerTrajectory pathPlannerTrajectory) {
@@ -49,6 +67,19 @@ public class Autos {
                 new ChassisSpeeds(0, 0, 0),
                 startingRot
             )
+        );
+    }
+
+    public static Command runSpeakerShot(Shooter shooter) {
+        return Commands.sequence(
+            shooter.runSetWristPosition(ShooterPosition.SPEAKER),
+            shooter.runShooter(20),
+            new WaitCommand(1.2),
+            shooter.runIndex(-10),
+            new WaitCommand(1.5),
+            shooter.runIndex(0),
+            shooter.runShooter(0),
+            shooter.runSetWristPosition(ShooterPosition.FLAT)
         );
     }
 }

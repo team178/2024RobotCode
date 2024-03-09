@@ -8,6 +8,7 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterPosition;
 import frc.robot.commands.AutoCommand;
+import frc.robot.commands.Autos;
 import frc.robot.commands.DriveTrajectory;
 import frc.robot.commands.auto.MidDoubleAuto;
 import frc.robot.subsystems.swerve.SwerveDrive;
@@ -39,6 +40,8 @@ public class RobotContainer {
     configureBindings();
     CameraServer.startAutomaticCapture();
     Shuffleboard.getTab("Camera").add("Camera", CameraServer.getVideo().getSource());
+
+    Autos.initAutos(swerveDrive, shooter);
   }
 
   private void configureBindings() {
@@ -56,7 +59,7 @@ public class RobotContainer {
       driverController::getRightX, // use in real robot
       // altController::getLeftX, //use in simulation
       driverController.leftBumper()::getAsBoolean,
-      driverController.rightTrigger()::getAsBoolean,
+      driverController.rightBumper()::getAsBoolean,
       true
     ));
     
@@ -82,9 +85,13 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    DriveTrajectory testPath = new DriveTrajectory("New Path", swerveDrive, Rotation2d.fromDegrees(180));
-    swerveDrive.resetPose(testPath.getStartPose());
+    // DriveTrajectory testPath = new DriveTrajectory("New Path", swerveDrive, Rotation2d.fromDegrees(180));
+    // swerveDrive.resetPose(testPath.getStartPose());
     // return testPath;
-    return Commands.print("No current auto configured");
+    // return Commands.print("No current auto configured");
+
+    AutoCommand selectedAuto = Autos.autoChooser.getSelected();
+    swerveDrive.resetPose(selectedAuto.getStartPose());
+    return selectedAuto;
   }
 }

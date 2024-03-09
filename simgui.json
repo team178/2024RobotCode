@@ -11,6 +11,7 @@
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
+      "/Shuffleboard/Autos/Auto": "String Chooser",
       "/SmartDashboard/Auto Visualization": "Field2d",
       "/SmartDashboard/Field": "Field2d",
       "/SmartDashboard/Swerve Visualization": "Mechanism2d",
