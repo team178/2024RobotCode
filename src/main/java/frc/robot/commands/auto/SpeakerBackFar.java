@@ -9,8 +9,8 @@ import frc.robot.commands.Autos;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.swerve.SwerveDrive;
 
-public class SpeakerBack extends AutoCommand {
-    public SpeakerBack(SwerveDrive swerve, Shooter shooter) {
+public class SpeakerBackFar extends AutoCommand {
+    public SpeakerBackFar(SwerveDrive swerve, Shooter shooter) {
         addCommands(
             Autos.runSpeakerShot(shooter),
             swerve.runSetGyroAngle(Rotation2d.fromDegrees(180)),
@@ -18,7 +18,7 @@ public class SpeakerBack extends AutoCommand {
             Commands.runOnce(() -> {
                 swerve.rawDriveInputs(0, 2, 0, false, false);
             }, swerve),
-            new WaitCommand(1.6),
+            new WaitCommand(2.4),
             Commands.run(() -> {
                 swerve.rawDriveInputs(0, 0, -1.5, false, false);
                 // System.out.println(Math.abs(swerve.getRotation2d().getDegrees() % 360));
@@ -35,6 +35,6 @@ public class SpeakerBack extends AutoCommand {
 
     @Override
     public Pose2d getStartPose() {
-        return Autos.getPathPlannerTrajectory("Get Mid Note", Rotation2d.fromDegrees(0)).getInitialPose();
+        return Autos.getPathPlannerTrajectory("Leave Side", Rotation2d.fromDegrees(0)).getInitialPose();
     }
 }

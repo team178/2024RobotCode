@@ -22,6 +22,7 @@ import frc.robot.commands.auto.MidDoubleAuto;
 import frc.robot.commands.auto.NothingAuto;
 import frc.robot.commands.auto.ShootOnly;
 import frc.robot.commands.auto.SpeakerBack;
+import frc.robot.commands.auto.SpeakerBackFar;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterPosition;
 import frc.robot.subsystems.swerve.SwerveDrive;
@@ -31,8 +32,9 @@ public class Autos {
     public static final Field2d autoField = new Field2d();
 
     public static final void initAutos(SwerveDrive swerve, Shooter shooter) {
-        autoChooser.addOption("Speaker Back", new SpeakerBack(swerve, shooter));
-        autoChooser.setDefaultOption("Shoot Only", new ShootOnly(swerve, shooter));
+        autoChooser.setDefaultOption("Speaker Back", new SpeakerBack(swerve, shooter));
+        autoChooser.addOption("Speaker Back Far", new SpeakerBackFar(swerve, shooter));
+        autoChooser.addOption("Shoot Only", new ShootOnly(swerve, shooter));
         // autoChooser.addOption("Shoot Only", new SpeakerOnly(shooter));
         autoChooser.addOption("Do Nothing", new NothingAuto(swerve));
         // autoChooser.addOption("Mid Double Auto", new MidDoubleAuto(swerveDrive));
@@ -73,10 +75,10 @@ public class Autos {
     public static Command runSpeakerShot(Shooter shooter) {
         return Commands.sequence(
             shooter.runSetWristPosition(ShooterPosition.SPEAKER),
-            shooter.runShooter(20),
-            new WaitCommand(1.2),
-            shooter.runIndex(-10),
+            shooter.runShooter(23),
             new WaitCommand(1.5),
+            shooter.runIndex(-12),
+            new WaitCommand(1.7),
             shooter.runIndex(0),
             shooter.runShooter(0),
             shooter.runSetWristPosition(ShooterPosition.FLAT)

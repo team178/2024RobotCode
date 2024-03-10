@@ -109,7 +109,7 @@ public class Shooter extends SubsystemBase {
             ShooterConstants.kWristPIDConstants.kV(), // actually kG
             0
         );
-        setWristPosition(ShooterPosition.SPEAKER);
+        setWristPosition(ShooterPosition.FLAT);
         toSetpoint = false;
         toTest = false;
         speedFactor = 0;
@@ -207,14 +207,15 @@ public class Shooter extends SubsystemBase {
         wristPID.setD(ShooterConstants.kWristPIDConstants.kD());
         wristFF.setG(ShooterConstants.kWristPIDConstants.kV());
 
-        if(!lowerLimit.get()) {
-            wristMotor.setVoltage(MathUtil.clamp(wristPIDOutput + wristFFOutput, 0, 6));
-        } else {
-            wristMotor.setVoltage(wristPIDOutput + wristFFOutput);
-        }
+        // with limit switch
+        // if(!lowerLimit.get()) {
+        //     wristMotor.setVoltage(MathUtil.clamp(wristPIDOutput + wristFFOutput, 0, 6));
+        // } else {
+        //     wristMotor.setVoltage(wristPIDOutput + wristFFOutput);
+        // }
 
         // no limit switch
-        // wristMotor.setVoltage(wristPIDOutput + wristFFOutput);
+        wristMotor.setVoltage(wristPIDOutput + wristFFOutput);
 
         // use test preference as input
         // if(toTest) {

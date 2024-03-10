@@ -18,6 +18,11 @@
       "/SmartDashboard/Trajectory Field": "Field2d"
     },
     "windows": {
+      "/Shuffleboard/Autos/Auto": {
+        "window": {
+          "visible": true
+        }
+      },
       "/SmartDashboard/Auto Visualization": {
         "bottom": 1476,
         "height": 8.210550308227539,
