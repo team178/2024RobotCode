@@ -77,7 +77,7 @@ public class Autos {
             shooter.runSetWristPosition(ShooterPosition.SPEAKER),
             shooter.runShooter(23),
             new WaitCommand(1.5),
-            shooter.runIndex(-12),
+            shooter.runIndex(-15),
             new WaitCommand(1.7),
             shooter.runIndex(0),
             shooter.runShooter(0),
