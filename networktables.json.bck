@@ -1,5 +1,37 @@
 [
   {
+    "name": "/Preferences/kSwervePresetRotP",
+    "type": "double",
+    "value": 0.015,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/kSwervePresetRotI",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/kSwervePresetRotD",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/kSwervePresetRotV",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
     "name": "/Preferences/kSwerveTestTurn",
     "type": "double",
     "value": 0.0,

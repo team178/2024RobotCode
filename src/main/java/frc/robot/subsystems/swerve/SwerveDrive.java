@@ -15,6 +15,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -33,6 +34,7 @@ import frc.robot.Constants.SwerveConstants;
 import frc.robot.commands.Autos;
 import frc.robot.commands.DriveTrajectory;
 import frc.robot.util.MechanismLigament2dWrapper;
+import frc.robot.util.MotorPID;
 import frc.robot.util.RateLimiter;
 
 public class SwerveDrive extends SubsystemBase {
@@ -57,6 +59,17 @@ public class SwerveDrive extends SubsystemBase {
     private RateLimiter directionVelLimiter;
     private RateLimiter rotationAccelLimiter;
 
+    private BooleanSupplier goSpeakerRot;
+    private BooleanSupplier goAmpRot;
+    private BooleanSupplier goSourceRot;
+    private BooleanSupplier goAimedSpeaker;
+    private MotorPID presetRotationPID;
+
+    private BooleanSupplier goAmpPos;
+    private BooleanSupplier goSpeakerPos;
+    private MotorPID ampPosPID;
+    private MotorPID speakerPosPID;
+
     private Mechanism2d swerveVisualizer;
     private MechanismLigament2dWrapper frontLeftLigament;
     private MechanismLigament2dWrapper frontRightLigament;
@@ -75,6 +88,8 @@ public class SwerveDrive extends SubsystemBase {
         initComponents();
         initMathModels();
         initSimulations();
+        setRotationPresetInputs(() -> false, () -> false, () -> false, () -> false);
+        setPositionPresetInputs(() -> false, () -> false);
     }
 
     private void initComponents() {
@@ -140,7 +155,20 @@ public class SwerveDrive extends SubsystemBase {
             new Pose2d(16.542, 8.221, Rotation2d.fromDegrees(180)) :
             new Pose2d(0, 0, Rotation2d.fromDegrees(0)))
         );
-        
+        presetRotationPID = new MotorPID(
+            SwerveConstants.kPresetRotPIDConstants.kP(),
+            SwerveConstants.kPresetRotPIDConstants.kI(),
+            SwerveConstants.kPresetRotPIDConstants.kD()
+        );
+        presetRotationPID.setSetpoint(180);
+        // presetRotationPID.setTolerance(5);
+        presetRotationPID.enableContinuousInput(-180, 180);
+
+        speakerPosPID = new MotorPID(1.5, 0, 0);
+        speakerPosPID.setSetpoint(5.54);
+
+        ampPosPID = new MotorPID(1.5, 0, 0);
+        ampPosPID.setSetpoint(DriverStation.getAlliance().equals(Optional.of(Alliance.Blue))? 1.9 : 16.542 - 1.9);
 
         SwerveConstants.kSwerveKinematics.toSwerveModuleStates(new ChassisSpeeds(0, 0.01, 0));
     }
@@ -179,6 +207,18 @@ public class SwerveDrive extends SubsystemBase {
         
         SmartDashboard.putData("Swerve Visualization", swerveVisualizer);
         SmartDashboard.putData("Field", field);   
+    }
+
+    public void setRotationPresetInputs(BooleanSupplier speaker, BooleanSupplier amp, BooleanSupplier source, BooleanSupplier aimedSpeaker) {
+        goSpeakerRot = speaker;
+        goAmpRot = amp;
+        goSourceRot = source;
+        goAimedSpeaker = aimedSpeaker;
+    }
+
+    public void setPositionPresetInputs(BooleanSupplier speaker, BooleanSupplier amp) {
+        goSpeakerPos = speaker;
+        goAmpPos = amp;
     }
 
     /**
@@ -281,6 +321,48 @@ public class SwerveDrive extends SubsystemBase {
         ySpeed = MathUtil.applyDeadband(ySpeed, 0.01);
         rotSpeed = MathUtil.applyDeadband(rotSpeed, 0.01);
 
+        addPresetRotDriveInputs(xSpeed, ySpeed, rotSpeed, noOptimize, robotCentric);
+    }
+
+    private void addPresetRotDriveInputs(double xSpeed, double ySpeed, double rotSpeed, boolean noOptimize, boolean robotCentric) {
+        if(goSpeakerRot.getAsBoolean()) {
+            presetRotationPID.setSetpoint(180);
+            presetRotDriveInputs(xSpeed, ySpeed, noOptimize, robotCentric);
+        } else if(goAmpRot.getAsBoolean()) {
+            presetRotationPID.setSetpoint(DriverStation.getAlliance().equals(Optional.of(Alliance.Blue)) ? 90 : -90);
+            presetRotDriveInputs(xSpeed, ySpeed, noOptimize, robotCentric);
+        } else if(goSourceRot.getAsBoolean()) {
+            presetRotationPID.setSetpoint(DriverStation.getAlliance().equals(Optional.of(Alliance.Blue)) ? -60 : 60);
+            presetRotDriveInputs(xSpeed, ySpeed, noOptimize, robotCentric);
+        } else if(goAimedSpeaker.getAsBoolean()) {
+            double xOff = swerveOdometry.getEstimatedPosition().getY() - 5.54;
+            double yOff = swerveOdometry.getEstimatedPosition().getX() - (DriverStation.getAlliance().equals(Optional.of(Alliance.Blue)) ? -0.5 : 16.542 + 0.5);
+            double angle = Math.atan2(xOff, yOff);
+            presetRotationPID.setSetpoint(Units.radiansToDegrees(angle));
+            presetRotDriveInputs(xSpeed, ySpeed, noOptimize, robotCentric);
+        } else {
+            addPresetPositionDriveInputs(xSpeed, ySpeed, rotSpeed, noOptimize, robotCentric);
+        }
+    }
+
+    private void presetRotDriveInputs(double rawXSpeed, double rawYSpeed, boolean noOptimize, boolean robotCentric) {
+        double rotSpeed = presetRotationPID.calculate(gyro.getRotation2d().getDegrees());
+        addPresetPositionDriveInputs(rawXSpeed, rawYSpeed, rotSpeed, noOptimize, robotCentric);
+    }
+
+    private void addPresetPositionDriveInputs(double xSpeed, double ySpeed, double rotSpeed, boolean noOptimize, boolean robotCentric) {
+        // amp: blue 1.9, red 16.542 - 1.9 (meters)
+        // speaker: 5.54 (meters)
+        if(robotCentric) {
+            rawDriveInputs(xSpeed, ySpeed, rotSpeed, noOptimize, robotCentric);
+            return;
+        }
+        if(goAmpPos.getAsBoolean()) {
+            ampPosPID.setSetpoint(DriverStation.getAlliance().equals(Optional.of(Alliance.Blue))? 1.9 : 16.542 - 1.9);
+            rawDriveInputs(xSpeed, ampPosPID.calculate(swerveOdometry.getEstimatedPosition().getX()), rotSpeed, noOptimize, robotCentric);
+        } else if(goSpeakerPos.getAsBoolean()) {
+            rawDriveInputs(speakerPosPID.calculate(swerveOdometry.getEstimatedPosition().getY()), ySpeed, rotSpeed, noOptimize, robotCentric);
+        }
         rawDriveInputs(xSpeed, ySpeed, rotSpeed, noOptimize, robotCentric);
     }
 
