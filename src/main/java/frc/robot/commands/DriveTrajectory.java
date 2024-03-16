@@ -105,8 +105,10 @@ public class DriveTrajectory extends Command {
             desiredChassisSpeeds.omegaRadiansPerSecond
             // Math.max(desiredChassisSpeeds.omegaRadiansPerSecond, SwerveConstants.kRotVelLimit
         );
+        SmartDashboard.putNumber("auto/rotSpeed", desiredChassisSpeeds.omegaRadiansPerSecond);
         SwerveModuleState[] states = SwerveConstants.kSwerveKinematics.toSwerveModuleStates(updatedChassisSpeeds);
         swerveDrive.rawModuleInputs(states, false);
+        // swerveDrive.resetPose(currentState.poseMeters);
 
         // only needed for simulating
         if(curTime > trajectory.getTotalTimeSeconds() + 1) {

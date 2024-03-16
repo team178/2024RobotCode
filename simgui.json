@@ -11,18 +11,12 @@
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
-      "/Shuffleboard/Autos/Auto": "String Chooser",
       "/SmartDashboard/Auto Visualization": "Field2d",
       "/SmartDashboard/Field": "Field2d",
       "/SmartDashboard/Swerve Visualization": "Mechanism2d",
       "/SmartDashboard/Trajectory Field": "Field2d"
     },
     "windows": {
-      "/Shuffleboard/Autos/Auto": {
-        "window": {
-          "visible": true
-        }
-      },
       "/SmartDashboard/Auto Visualization": {
         "bottom": 1476,
         "height": 8.210550308227539,
@@ -156,7 +150,10 @@
             }
           ]
         }
-      ]
+      ],
+      "window": {
+        "visible": false
+      }
     }
   }
 }

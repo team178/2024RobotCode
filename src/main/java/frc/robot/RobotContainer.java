@@ -29,14 +29,14 @@ public class RobotContainer {
 	private final CommandXboxController altController;
 	private final SwerveDrive swerveDrive;
 	private final Shooter shooter;
-	private final Intake intake;
+	// private final Intake intake;
 
 	public RobotContainer() {
 		Preferences.removeAll();
 		
 		swerveDrive = new SwerveDrive();
 		shooter = new Shooter();
-		intake = new Intake();
+		// intake = new Intake();
 
 		driverController = new CommandXboxController(OperatorConstants.kDriverControllerPort);
 		altController = new CommandXboxController(OperatorConstants.kAuxControllerPort);
@@ -91,21 +91,21 @@ public class RobotContainer {
 		altController.y().onTrue(shooter.runSetWristPosition(ShooterPosition.AMP));
 		altController.a().onTrue(shooter.runSetWristPosition(ShooterPosition.SOURCE));
 		altController.b().onTrue(shooter.runSetWristPosition(ShooterPosition.FLAT));
-		altController.rightStick().onTrue(shooter.runShooter(20));
+		altController.rightStick().onTrue(shooter.runShooter(10));
 		altController.rightStick().onFalse(shooter.runShooter(0));
 		altController.leftBumper().onTrue(shooter.runIndex(-15));
 		altController.leftBumper().onFalse(shooter.runIndex(0));
 		altController.leftTrigger().onTrue(shooter.runIndex(15));
 		altController.leftTrigger().onFalse(shooter.runIndex(0));
 
-		altController.povRight().onTrue(intake.runDeploy(-5));
-		altController.povRight().onFalse(intake.runDeploy(0));
-		altController.povLeft().onTrue(intake.runDeploy(5));
-		altController.povLeft().onFalse(intake.runDeploy(0));
-		altController.rightBumper().onTrue(intake.runRoller(-16));
-		altController.rightBumper().onFalse(intake.runRoller(0));
-		altController.rightTrigger().onTrue(intake.runRoller(16));
-		altController.rightTrigger().onFalse(intake.runRoller(0));
+		// altController.povRight().onTrue(intake.runDeploy(-5));
+		// altController.povRight().onFalse(intake.runDeploy(0));
+		// altController.povLeft().onTrue(intake.runDeploy(5));
+		// altController.povLeft().onFalse(intake.runDeploy(0));
+		// altController.rightBumper().onTrue(intake.runRoller(-16));
+		// altController.rightBumper().onFalse(intake.runRoller(0));
+		// altController.rightTrigger().onTrue(intake.runRoller(16));
+		// altController.rightTrigger().onFalse(intake.runRoller(0));
 	}
 
 	public Command getAutonomousCommand() {

@@ -120,7 +120,7 @@ public class Shooter extends SubsystemBase {
     }
 
     public void setShootVolts(double volts) {
-        shooterLowerMotor.setVoltage(volts * speedFactor * 1.1);
+        shooterLowerMotor.setVoltage(volts * speedFactor * 1.2);
         shooterUpperMotor.setVoltage(-volts * speedFactor);
     }
 
@@ -228,13 +228,13 @@ public class Shooter extends SubsystemBase {
 
         switch(shooterPosition) {
             case SOURCE:
-                speedFactor = 0.2;
+                speedFactor = 0.5;
                 break;
             case SPEAKER:
                 speedFactor = -1;
                 break;
             case AMP:
-                speedFactor = 0.5; // 0.3
+                speedFactor = 0.7; // 0.3
                 break;
             default:
                 speedFactor = -0.04;

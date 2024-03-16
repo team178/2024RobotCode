@@ -11,7 +11,7 @@ public class NothingAuto extends AutoCommand {
     private Rotation2d startingRot;
 
     public NothingAuto(SwerveDrive swerve) {
-        this(swerve, Rotation2d.fromDegrees(180));
+        this(swerve, Rotation2d.fromDegrees(179));
     }
 
     public NothingAuto(SwerveDrive swerve, Rotation2d startingRot) {

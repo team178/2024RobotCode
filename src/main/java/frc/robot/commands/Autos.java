@@ -75,7 +75,7 @@ public class Autos {
     public static Command runSpeakerShot(Shooter shooter) {
         return Commands.sequence(
             shooter.runSetWristPosition(ShooterPosition.SPEAKER),
-            shooter.runShooter(23),
+            shooter.runShooter(10),
             new WaitCommand(1.5),
             shooter.runIndex(-15),
             new WaitCommand(1.7),
