@@ -18,11 +18,17 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.Ultrasonic;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
+import frc.robot.util.MechanismLigament2dWrapper;
 import frc.robot.util.MotorFF;
 import frc.robot.util.MotorPID;
 
@@ -38,8 +44,7 @@ public class Shooter extends SubsystemBase {
 
     private SparkAbsoluteEncoder wristEncoder;
 
-    private Ultrasonic ultrasonic;
-    private MedianFilter ultrasonicFilter;
+    private DigitalInput photosensor;
 
     private MotorPID wristPID;
     private MotorFF wristFF;
@@ -50,6 +55,10 @@ public class Shooter extends SubsystemBase {
     private double wristFFOutput;
 
     private double speedFactor;
+    private double indexSpeedFactor;
+
+    private Mechanism2d shooterVisualizer;
+    private MechanismLigament2dWrapper shooterLigament;
 
     private boolean toSetpoint;
     private boolean toTest;
@@ -62,8 +71,7 @@ public class Shooter extends SubsystemBase {
         shooterLowerMotor = new CANSparkMax(ShooterConstants.kShooterLowerMotorCanID, MotorType.kBrushless);
         shooterUpperMotor = new CANSparkMax(ShooterConstants.kShooterUpperMotorCanID, MotorType.kBrushless);
 
-        // ultrasonic = new Ultrasonic(ShooterConstants.kUltrasonicEchoDIOPort, ShooterConstants.kUltrasonicEchoDIOPort);
-        // ultrasonicFilter = new MedianFilter(ShooterConstants.kMedianFilterSize);
+        photosensor = new DigitalInput(ShooterConstants.kPhotosensorDIO);
 
         lowerLimit = new DigitalInput(ShooterConstants.kLowerLimitDIOPort);
 
@@ -88,10 +96,14 @@ public class Shooter extends SubsystemBase {
         indexMotor.setCANTimeout(0);
         shooterLowerMotor.setCANTimeout(0);
         shooterUpperMotor.setCANTimeout(0);
-        // wristMotor.enableVoltageCompensation(12);
-        // indexMotor.enableVoltageCompensation(12);
-        // shooterLowerMotor.enableVoltageCompensation(12);
-        // shooterUpperMotor.enableVoltageCompensation(12);
+        wristMotor.enableVoltageCompensation(12);
+        indexMotor.enableVoltageCompensation(12);
+        shooterLowerMotor.enableVoltageCompensation(12);
+        shooterUpperMotor.enableVoltageCompensation(12);
+
+        indexMotor.setOpenLoopRampRate(0.2);
+        shooterLowerMotor.setOpenLoopRampRate(0.2);
+        shooterUpperMotor.setOpenLoopRampRate(0.2);
 
         wristMotor.burnFlash();
         indexMotor.burnFlash();
@@ -113,10 +125,17 @@ public class Shooter extends SubsystemBase {
         toSetpoint = false;
         toTest = false;
         speedFactor = 0;
+
+        shooterVisualizer = new Mechanism2d(12, 12);
+        MechanismRoot2d root = shooterVisualizer.getRoot("root", 2, 2);
+        shooterLigament = new MechanismLigament2dWrapper("shooter", 4, 0, 5, new Color8Bit(Color.kYellow));
+        root.append(shooterLigament.ligament);
+        root.append(new MechanismLigament2d("a forward reference", 5, 0, 2, new Color8Bit(Color.kBlue)));
+        SmartDashboard.putData("Shooter Visualizer", shooterVisualizer);
     }
 
     public void setIndexVolts(double volts) {
-        indexMotor.setVoltage(volts * Math.abs(speedFactor));
+        indexMotor.setVoltage(volts * Math.abs(indexSpeedFactor));
     }
 
     public void setShootVolts(double volts) {
@@ -129,9 +148,19 @@ public class Shooter extends SubsystemBase {
         wristPID.setSetpoint(position.position);
         wristPID.resetIntegralError();
     }
+
+    public void setWristSetpoint(ShooterPosition position, double angleSetpoint) {
+        shooterPosition = position;
+        wristPID.setSetpoint(angleSetpoint);
+        wristPID.resetIntegralError();
+    }
     
-    public double getWristPostition() {
+    public double getWristPosition() {
         return wristEncoder.getPosition();
+    }
+
+    public boolean getPhotosensor() {
+        return !photosensor.get();
     }
 
     public Command runIndex(double volts) {
@@ -173,6 +202,11 @@ public class Shooter extends SubsystemBase {
             speedFactor = factor;
         });
     }
+    public Command runSetIndexSpeedFactor(double factor) {
+        return run(() -> {
+            indexSpeedFactor = factor;
+        });
+    }
 
     public Command runAmp() {
         return Commands.sequence(
@@ -194,28 +228,33 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void periodic() {
-        shooterNT.getEntry("armPos").setDouble(getWristPostition());
+        shooterNT.getEntry("armPos").setDouble(getWristPosition());
 
         wristPIDOutput = MathUtil.clamp(
-            wristPID.calculate(getWristPostition()),
+            wristPID.calculate(getWristPosition()),
             -ShooterConstants.kWristPIDMaxOutput,
             ShooterConstants.kWristPIDMaxOutput);
         wristFFOutput = wristFF.calculate(Units.degreesToRadians(wristPID.getSetpoint() - 98.5 + 90), 0); // adjust offset here
 
         wristPID.setP(ShooterConstants.kWristPIDConstants.kP());
-        wristPID.setI(ShooterConstants.kWristPIDConstants.kI());
+        wristPID.setI(shooterPosition.equals(ShooterPosition.FLAT) ? 0 : ShooterConstants.kWristPIDConstants.kI());
         wristPID.setD(ShooterConstants.kWristPIDConstants.kD());
         wristFF.setG(ShooterConstants.kWristPIDConstants.kV());
 
-        // with limit switch
+        // --with limit switch
         // if(!lowerLimit.get()) {
         //     wristMotor.setVoltage(MathUtil.clamp(wristPIDOutput + wristFFOutput, 0, 6));
         // } else {
         //     wristMotor.setVoltage(wristPIDOutput + wristFFOutput);
         // }
 
-        // no limit switch
-        wristMotor.setVoltage(wristPIDOutput + wristFFOutput);
+        // --no limit switch
+        // prevent bouncing
+        if(getWristPosition() > 80 + ShooterConstants.kShooterEncoderOffset && getWristPosition() < 95 + ShooterConstants.kShooterEncoderOffset && shooterPosition.equals(ShooterPosition.AMP)) {
+            wristMotor.setVoltage(0.2 * wristPIDOutput + wristFFOutput);
+        } else {
+            wristMotor.setVoltage(wristPIDOutput + wristFFOutput);
+        }
 
         // use test preference as input
         // if(toTest) {
@@ -229,15 +268,19 @@ public class Shooter extends SubsystemBase {
         switch(shooterPosition) {
             case SOURCE:
                 speedFactor = 0.5;
+                indexSpeedFactor = 0.3;
                 break;
             case SPEAKER:
                 speedFactor = -1;
+                indexSpeedFactor = speedFactor;
                 break;
             case AMP:
                 speedFactor = 0.7; // 0.3
+                indexSpeedFactor = speedFactor;
                 break;
             default:
                 speedFactor = -0.04;
+                indexSpeedFactor = 0.1;
                 break;
         }
 
@@ -250,5 +293,9 @@ public class Shooter extends SubsystemBase {
         shooterNT.getEntry("lowspeed").setDouble(shooterLowerMotor.getEncoder().getVelocity());
         shooterNT.getEntry("upspeed").setDouble(shooterUpperMotor.getEncoder().getVelocity());
         shooterNT.getEntry("indexspeed").setDouble(indexMotor.getEncoder().getVelocity());
+        shooterNT.getEntry("photosensor").setBoolean(!photosensor.get());
+
+        shooterLigament.setAngle(wristEncoder.getPosition() + ShooterConstants.kShooterEncoderOffset);
+        // shooterLigament.setAngle(wristPID.getSetpoint());
    }
 }

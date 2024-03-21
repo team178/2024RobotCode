@@ -111,9 +111,9 @@ public final class Constants {
 		public static final int kShooterLowerMotorCanID = 13;
 		public static final int kShooterUpperMotorCanID = 14;
 
-		public static final int kUltrasonicPingDIOPort = 0;
-		public static final int kUltrasonicEchoDIOPort = 1;
-		public static final int kMedianFilterSize = 5;
+		public static final int kPhotosensorDIO = 9;
+
+		public static final double kShooterEncoderOffset = -1.8;
 
 		public static final int kLowerLimitDIOPort = 1;
 
@@ -142,6 +142,7 @@ public final class Constants {
 	}
 
 	public static class ClimberConstants { // CAN ID range 20+, TBD
+		public static final int kClimberMotorCanID = 20;
 	}
 
 	public static class OperatorConstants {

@@ -5,9 +5,11 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterPosition;
+import frc.robot.commands.AimShooter;
 import frc.robot.commands.AutoCommand;
 import frc.robot.commands.Autos;
 import frc.robot.commands.DriveTrajectory;
@@ -16,8 +18,10 @@ import frc.robot.subsystems.swerve.SwerveDrive;
 
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -30,6 +34,7 @@ public class RobotContainer {
 	private final SwerveDrive swerveDrive;
 	private final Shooter shooter;
 	// private final Intake intake;
+	// private final Climber climber;
 
 	public RobotContainer() {
 		Preferences.removeAll();
@@ -37,13 +42,19 @@ public class RobotContainer {
 		swerveDrive = new SwerveDrive();
 		shooter = new Shooter();
 		// intake = new Intake();
+		// climber = new Climber();
 
 		driverController = new CommandXboxController(OperatorConstants.kDriverControllerPort);
 		altController = new CommandXboxController(OperatorConstants.kAuxControllerPort);
 
 		configureBindings();
+		ShuffleboardTab cameraTab = Shuffleboard.getTab("Camera");
+
 		CameraServer.startAutomaticCapture();
-		Shuffleboard.getTab("Camera").add("Camera", CameraServer.getVideo().getSource());
+		
+		cameraTab.add("Field", swerveDrive.getField()).withSize(6, 3).withPosition(0, 0);
+		cameraTab.add("Camera", CameraServer.getVideo().getSource()).withSize(4, 4).withPosition(6, 0);
+		cameraTab.addBoolean("Photosensor", shooter::getPhotosensor).withSize(2, 2).withPosition(0, 3);
 
 		Autos.initAutos(swerveDrive, shooter);
   	}
@@ -57,6 +68,10 @@ public class RobotContainer {
 
 		driverController.rightTrigger().onTrue(swerveDrive.runSetSpeedFactor(0.15));
 		driverController.rightTrigger().onFalse(swerveDrive.runSetSpeedFactor(1));
+
+		new Trigger(() -> DriverStation.isTeleopEnabled() && shooter.getWristPosition() > 35)
+			.onTrue(swerveDrive.runSetArmSpeedFactor(0.2))
+			.onFalse(swerveDrive.runSetArmSpeedFactor(1));
 	
 		swerveDrive.setDefaultCommand(swerveDrive.runDriveInputs(
 			driverController::getLeftX,
@@ -97,6 +112,14 @@ public class RobotContainer {
 		altController.leftBumper().onFalse(shooter.runIndex(0));
 		altController.leftTrigger().onTrue(shooter.runIndex(15));
 		altController.leftTrigger().onFalse(shooter.runIndex(0));
+		altController.back().onTrue(shooter.runIndex(15));
+		altController.back().onFalse(shooter.runIndex(0));
+		// altController.rightBumper().onTrue(climber.runSetClimberVolts(-3));
+		// altController.rightBumper().onFalse(climber.runSetClimberVolts(0));
+		// altController.rightTrigger().onTrue(climber.runSetClimberVolts(3));
+		// altController.rightTrigger().onFalse(climber.runSetClimberVolts(0));
+
+		altController.leftStick().onTrue(new AimShooter(swerveDrive, shooter));
 
 		// altController.povRight().onTrue(intake.runDeploy(-5));
 		// altController.povRight().onFalse(intake.runDeploy(0));

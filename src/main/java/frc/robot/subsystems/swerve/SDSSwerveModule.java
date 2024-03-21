@@ -61,7 +61,6 @@ public class SDSSwerveModule {
         turnMotor.setClosedLoopRampRate(0); // to be set?
         driveMotor.setClosedLoopRampRate(0);
 
-        // thesse need to be tested!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         turnMotor.setCANTimeout(0);
         driveMotor.setCANTimeout(0);
         turnMotor.enableVoltageCompensation(12);

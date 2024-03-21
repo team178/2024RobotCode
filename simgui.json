@@ -11,8 +11,11 @@
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
+      "/Shuffleboard/Autos/Auto": "String Chooser",
       "/SmartDashboard/Auto Visualization": "Field2d",
       "/SmartDashboard/Field": "Field2d",
+      "/SmartDashboard/Limelight Estimated Pose": "Field2d",
+      "/SmartDashboard/Shooter Visualizer": "Mechanism2d",
       "/SmartDashboard/Swerve Visualization": "Mechanism2d",
       "/SmartDashboard/Trajectory Field": "Field2d"
     },
@@ -35,6 +38,11 @@
         "right": 2961,
         "top": 79,
         "width": 16.541748046875,
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Shooter Visualizer": {
         "window": {
           "visible": true
         }

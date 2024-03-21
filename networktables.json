@@ -1,6 +1,14 @@
 [
   {
-    "name": "/Preferences/kSwerveModuleTurnD",
+    "name": "/Preferences/kSwervePresetRotP",
+    "type": "double",
+    "value": 0.12,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/kSwervePresetRotD",
     "type": "double",
     "value": 0.0,
     "properties": {
@@ -8,39 +16,7 @@
     }
   },
   {
-    "name": "/Preferences/kSwerveModuleDriveV",
-    "type": "double",
-    "value": 0.145,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/0 Front LeftEnabled",
-    "type": "boolean",
-    "value": true,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/1 Front RightEnabled",
-    "type": "boolean",
-    "value": true,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/kSwerveModuleTurnP",
-    "type": "double",
-    "value": 0.3,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/kSwerveModuleTurnV",
+    "name": "/Preferences/kSwervePresetRotV",
     "type": "double",
     "value": 0.0,
     "properties": {
@@ -48,65 +24,9 @@
     }
   },
   {
-    "name": "/Preferences/kSwerveModuleTurnI",
+    "name": "/Preferences/kSwervePresetRotI",
     "type": "double",
     "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/kSwerveTestTurn",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/kSwerveModuleDriveP",
-    "type": "double",
-    "value": 0.01,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/kSwerveModuleDriveI",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/kSwerveModuleDriveD",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/kSwerveTestDrive",
-    "type": "double",
-    "value": 0.0,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/2 Back LeftEnabled",
-    "type": "boolean",
-    "value": true,
-    "properties": {
-      "persistent": true
-    }
-  },
-  {
-    "name": "/Preferences/3 Back RightEnabled",
-    "type": "boolean",
-    "value": true,
     "properties": {
       "persistent": true
     }
