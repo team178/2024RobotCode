@@ -163,6 +163,10 @@ public class Shooter extends SubsystemBase {
         return !photosensor.get();
     }
 
+    public ShooterPosition getShooterPosition() {
+        return shooterPosition;
+    }
+
     public Command runIndex(double volts) {
         return runOnce(() -> {
             setIndexVolts(volts);
@@ -250,7 +254,7 @@ public class Shooter extends SubsystemBase {
 
         // --no limit switch
         // prevent bouncing
-        if(getWristPosition() > 80 + ShooterConstants.kShooterEncoderOffset && getWristPosition() < 95 + ShooterConstants.kShooterEncoderOffset && shooterPosition.equals(ShooterPosition.AMP)) {
+        if(getWristPosition() > 90 + ShooterConstants.kShooterEncoderOffset && getWristPosition() < 100 + ShooterConstants.kShooterEncoderOffset && shooterPosition.equals(ShooterPosition.AMP)) {
             wristMotor.setVoltage(0.2 * wristPIDOutput + wristFFOutput);
         } else {
             wristMotor.setVoltage(wristPIDOutput + wristFFOutput);

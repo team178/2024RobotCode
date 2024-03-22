@@ -24,6 +24,8 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -54,7 +56,7 @@ public class RobotContainer {
 		
 		cameraTab.add("Field", swerveDrive.getField()).withSize(6, 3).withPosition(0, 0);
 		cameraTab.add("Camera", CameraServer.getVideo().getSource()).withSize(4, 4).withPosition(6, 0);
-		cameraTab.addBoolean("Photosensor", shooter::getPhotosensor).withSize(2, 2).withPosition(0, 3);
+		cameraTab.addBoolean("Photosensor", shooter::getPhotosensor).withSize(6, 2).withPosition(0, 3);
 
 		Autos.initAutos(swerveDrive, shooter);
   	}
@@ -106,11 +108,21 @@ public class RobotContainer {
 		altController.y().onTrue(shooter.runSetWristPosition(ShooterPosition.AMP));
 		altController.a().onTrue(shooter.runSetWristPosition(ShooterPosition.SOURCE));
 		altController.b().onTrue(shooter.runSetWristPosition(ShooterPosition.FLAT));
-		altController.rightStick().onTrue(shooter.runShooter(10));
+		altController.rightStick().onTrue(
+			shooter.runShooter(10)
+			.andThen(new WaitUntilCommand(() -> shooter.getShooterPosition().equals(ShooterPosition.SOURCE) && (!altController.leftTrigger().getAsBoolean()) || (shooter.getPhotosensor())))
+			.andThen(new WaitCommand(0.2))
+			.andThen(shooter.runIndex(0))
+		);
 		altController.rightStick().onFalse(shooter.runShooter(0));
 		altController.leftBumper().onTrue(shooter.runIndex(-15));
 		altController.leftBumper().onFalse(shooter.runIndex(0));
-		altController.leftTrigger().onTrue(shooter.runIndex(15));
+		altController.leftTrigger().onTrue(
+			shooter.runIndex(15)
+			.andThen(new WaitUntilCommand(() -> shooter.getShooterPosition().equals(ShooterPosition.SOURCE) && (!altController.leftTrigger().getAsBoolean()) || (shooter.getPhotosensor())))
+			.andThen(new WaitCommand(0.2))
+			.andThen(shooter.runIndex(0))
+		);
 		altController.leftTrigger().onFalse(shooter.runIndex(0));
 		altController.back().onTrue(shooter.runIndex(15));
 		altController.back().onFalse(shooter.runIndex(0));
