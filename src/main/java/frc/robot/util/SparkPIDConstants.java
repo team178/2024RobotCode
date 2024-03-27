@@ -5,7 +5,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Preferences;
 
 public class SparkPIDConstants {
-    public static NetworkTable constantPreferences = NetworkTableInstance.getDefault().getTable("Custom Robot Preferences");
+    public static final NetworkTable constantPreferences = NetworkTableInstance.getDefault().getTable("Custom Robot Preferences");
     public static boolean enableNT = true;
 
     public final String name;

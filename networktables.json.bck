@@ -1,8 +1,88 @@
 [
   {
+    "name": "/Preferences/kSwerveTestDrive",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/kSwerveModuleDriveP",
+    "type": "double",
+    "value": 0.01,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
     "name": "/Preferences/0 Front LeftEnabled",
     "type": "boolean",
     "value": true,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/kSwerveTestTurn",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/kSwerveModuleDriveI",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/kSwerveModuleDriveD",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/kSwerveModuleDriveV",
+    "type": "double",
+    "value": 0.145,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/kSwerveModuleTurnP",
+    "type": "double",
+    "value": 0.3,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/kSwerveModuleTurnI",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/kSwerveModuleTurnD",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/kSwerveModuleTurnV",
+    "type": "double",
+    "value": 0.0,
     "properties": {
       "persistent": true
     }
@@ -27,6 +107,46 @@
     "name": "/Preferences/3 Back RightEnabled",
     "type": "boolean",
     "value": true,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/testwrist",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/kShooterWristP",
+    "type": "double",
+    "value": 0.16,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/kShooterWristI",
+    "type": "double",
+    "value": 0.007,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/kShooterWristD",
+    "type": "double",
+    "value": 0.0,
+    "properties": {
+      "persistent": true
+    }
+  },
+  {
+    "name": "/Preferences/kShooterWristV",
+    "type": "double",
+    "value": 0.5,
     "properties": {
       "persistent": true
     }
