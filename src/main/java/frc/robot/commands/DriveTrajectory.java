@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.subsystems.swerve.SwerveDrive;
+import frc.robot.util.LimelightHelpers;
 
 public class DriveTrajectory extends Command {
     public static final Field2d trajectoryField = new Field2d();
@@ -41,7 +42,7 @@ public class DriveTrajectory extends Command {
 
     public DriveTrajectory(String pathName, SwerveDrive swerveDrive, Rotation2d startingRot) { // starting rotation based off of blue side
         pathPlannerPath = PathPlannerPath.fromPathFile(pathName);
-        PathPlannerTrajectory pathPlannerTrajectory = DriverStation.getAlliance().equals(Optional.of(Alliance.Red)) ? 
+        PathPlannerTrajectory pathPlannerTrajectory = !LimelightHelpers.isBlueAlliance() ? 
             pathPlannerPath.flipPath().getTrajectory(
                 new ChassisSpeeds(0, 0, 0),
                 startingRot.rotateBy(Rotation2d.fromDegrees(180))

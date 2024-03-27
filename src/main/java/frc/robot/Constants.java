@@ -58,7 +58,7 @@ public final class Constants {
 		
 		public static final SparkPIDConstants kPresetRotPIDConstants = new SparkPIDConstants(
 			"SwervePresetRot",
-			0.12,
+			0.2,
 			0,
 			0,
 			0
@@ -123,7 +123,7 @@ public final class Constants {
 		public static final SparkPIDConstants kWristPIDConstants = new SparkPIDConstants(
 			"ShooterWrist",
 			0.16,
-			0.007,
+			0.01,
 			0,
 			0.5 // actually kG in motorFF
 		);

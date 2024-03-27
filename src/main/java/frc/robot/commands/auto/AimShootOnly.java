@@ -7,18 +7,18 @@ import frc.robot.commands.Autos;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.swerve.SwerveDrive;
 
-public class ShootOnly extends AutoCommand {
+public class AimShootOnly extends AutoCommand {
     private Rotation2d startingRot;
 
-    public ShootOnly(SwerveDrive swerve, Shooter shooter) {
+    public AimShootOnly(SwerveDrive swerve, Shooter shooter) {
         this(swerve, shooter, Rotation2d.fromDegrees(0));
     }
 
-    public ShootOnly(SwerveDrive swerve, Shooter shooter, Rotation2d startingRot) {
+    public AimShootOnly(SwerveDrive swerve, Shooter shooter, Rotation2d startingRot) {
         this.startingRot = startingRot;
         addCommands(
             swerve.runSetGyroAngle(startingRot),
-            Autos.runSpeakerShot(shooter)
+            Autos.runAimedSpeakerShot(swerve, shooter)
         );
         addRequirements(swerve, shooter);
     }

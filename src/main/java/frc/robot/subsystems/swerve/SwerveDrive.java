@@ -56,6 +56,7 @@ public class SwerveDrive extends SubsystemBase {
     private static final NetworkTable limelightNT = NetworkTableInstance.getDefault().getTable("limelight");
 
     private Pigeon2 gyro;
+    private double gyroValue;
 
     private SwerveDriveKinematics swerveKinematics;
     private SwerveDrivePoseEstimator swerveOdometry;
@@ -134,6 +135,7 @@ public class SwerveDrive extends SubsystemBase {
 
         gyro = new Pigeon2(SwerveConstants.kPigeonCanID);
         gyro.reset();
+        gyroValue = gyro.getAngle();
     }
 
     private void initMathModels() {
@@ -153,13 +155,13 @@ public class SwerveDrive extends SubsystemBase {
 
         swerveOdometry = new SwerveDrivePoseEstimator(
             SwerveConstants.kSwerveKinematics,
-            gyro.getRotation2d(), new SwerveModulePosition[]{
+            getRotation2d(), new SwerveModulePosition[]{
                 frontLeftModule.getPosition(),
                 frontRightModule.getPosition(),
                 backLeftModule.getPosition(),
                 backRightModule.getPosition()
             },
-            ((DriverStation.getAlliance().equals(Optional.of(Alliance.Blue))) ?
+            ((LimelightHelpers.isBlueAlliance()) ?
             new Pose2d(16.542, 8.221, Rotation2d.fromDegrees(180)) :
             new Pose2d(0, 0, Rotation2d.fromDegrees(0)))
         );
@@ -176,7 +178,7 @@ public class SwerveDrive extends SubsystemBase {
         speakerPosPID.setSetpoint(5.54);
 
         ampPosPID = new MotorPID(10, 0, 0);
-        ampPosPID.setSetpoint(DriverStation.getAlliance().equals(Optional.of(Alliance.Blue))? 1.9 : 16.542 - 1.9);
+        ampPosPID.setSetpoint(LimelightHelpers.isBlueAlliance() ? 1.9 : 16.542 - 1.9);
 
         SwerveConstants.kSwerveKinematics.toSwerveModuleStates(new ChassisSpeeds(0, 0.01, 0));
     }
@@ -338,10 +340,10 @@ public class SwerveDrive extends SubsystemBase {
             presetRotationPID.setSetpoint(180);
             presetRotDriveInputs(xSpeed, ySpeed, noOptimize, false);
         } else if(goAmpRot.getAsBoolean()) {
-            presetRotationPID.setSetpoint(DriverStation.getAlliance().equals(Optional.of(Alliance.Blue)) ? -90 : 90);
+            presetRotationPID.setSetpoint(LimelightHelpers.isBlueAlliance() ? -90 : 90);
             presetRotDriveInputs(xSpeed, ySpeed, noOptimize, false);
         } else if(goSourceRot.getAsBoolean()) {
-            presetRotationPID.setSetpoint(DriverStation.getAlliance().equals(Optional.of(Alliance.Blue)) ? -60 : 60);
+            presetRotationPID.setSetpoint(LimelightHelpers.isBlueAlliance() ? -60 : 60);
             presetRotDriveInputs(xSpeed, ySpeed, noOptimize, false);
         } else if(goAimedSpeaker.getAsBoolean()) {
             double desiredX = 5.54;
@@ -349,9 +351,10 @@ public class SwerveDrive extends SubsystemBase {
             else if(swerveOdometry.getEstimatedPosition().getY() < 5.19) desiredX += 0.35;
             else desiredX = swerveOdometry.getEstimatedPosition().getY();
             double xOff = swerveOdometry.getEstimatedPosition().getY() - desiredX;
-            double yOff = swerveOdometry.getEstimatedPosition().getX() - (DriverStation.getAlliance().equals(Optional.of(Alliance.Blue)) ? -0.5 : 16.542 + 0.5);
+            double yOff = swerveOdometry.getEstimatedPosition().getX() - (LimelightHelpers.isBlueAlliance() ? -0.5 : 16.542 + 0.5);
+            // System.out.println(LimelightHelpers.isBlueAlliance());
             double angle = Math.atan2(xOff, yOff);
-            presetRotationPID.setSetpoint(Units.radiansToDegrees(angle) + 180);
+            presetRotationPID.setSetpoint(Units.radiansToDegrees(angle) + (LimelightHelpers.isBlueAlliance() ? 180 : 0));
             presetRotDriveInputs(xSpeed, ySpeed, noOptimize, robotCentric);
         } else {
             addPresetPositionDriveInputs(xSpeed, ySpeed, rotSpeed, noOptimize, robotCentric);
@@ -359,7 +362,8 @@ public class SwerveDrive extends SubsystemBase {
     }
 
     private void presetRotDriveInputs(double rawXSpeed, double rawYSpeed, boolean noOptimize, boolean robotCentric) {
-        double rotSpeed = presetRotationPID.calculate(gyro.getRotation2d().getDegrees());
+        double rotSpeed = presetRotationPID.calculate(getRotation2d().getDegrees());
+        rotSpeed = MathUtil.clamp(rotSpeed, -8, 8);
         addPresetPositionDriveInputs(rawXSpeed, rawYSpeed, rotSpeed, noOptimize, robotCentric);
     }
 
@@ -372,14 +376,14 @@ public class SwerveDrive extends SubsystemBase {
             return;
         }
         if(goAmpPos.getAsBoolean()) {
-            ampPosPID.setSetpoint(DriverStation.getAlliance().equals(Optional.of(Alliance.Blue))? 1.9 : 16.542 - 1.9);
+            ampPosPID.setSetpoint(LimelightHelpers.isBlueAlliance()? 1.9 : 16.542 - 1.9);
             double output = ampPosPID.calculate(swerveOdometry.getEstimatedPosition().getX());
             output = MathUtil.clamp(output, -8, 8);
             rawDriveInputs(xSpeed, output, rotSpeed, noOptimize, false);
         } else if(goSpeakerPos.getAsBoolean()) {
             // System.out.println(-speakerPosPID.calculate(swerveOdometry.getEstimatedPosition().getY()));
             double output = speakerPosPID.calculate(swerveOdometry.getEstimatedPosition().getY());
-            if(DriverStation.getAlliance().equals(Optional.of(Alliance.Blue))) output = -output;
+            if(LimelightHelpers.isBlueAlliance()) output = -output;
             output = MathUtil.clamp(output, -8, 8);
             rawDriveInputs(output, ySpeed, rotSpeed, noOptimize, false);
         } else {
@@ -389,7 +393,7 @@ public class SwerveDrive extends SubsystemBase {
 
     public void rawDriveInputs(double rawXSpeed, double rawYSpeed, double rawRotSpeed, boolean noOptimize, boolean robotCentric) {
         SwerveModuleState[] states = SwerveConstants.kSwerveKinematics.toSwerveModuleStates(!robotCentric ?
-            ChassisSpeeds.fromFieldRelativeSpeeds(rawXSpeed, rawYSpeed, rawRotSpeed, gyro.getRotation2d()) : // see if gyro is done correctly 
+            ChassisSpeeds.fromFieldRelativeSpeeds(rawXSpeed, rawYSpeed, rawRotSpeed, getRotation2d()) : // see if gyro is done correctly 
             new ChassisSpeeds(rawXSpeed, rawYSpeed, rawRotSpeed)
         );
         // System.out.println(rawXSpeed + " " + rawYSpeed + " " + rawRotSpeed);
@@ -447,7 +451,7 @@ public class SwerveDrive extends SubsystemBase {
     
     public void resetPose(Pose2d pose) {
         swerveOdometry.resetPosition(
-            gyro.getRotation2d(),
+            getRotation2d(),
             getModulePositions(),
             pose
         );
@@ -525,8 +529,12 @@ public class SwerveDrive extends SubsystemBase {
         return swerveOdometry.getEstimatedPosition();
     }
 
+    public double getAngle() {
+        return gyroValue;
+    }
+
     public Rotation2d getRotation2d() {
-        return gyro.getRotation2d();
+        return Rotation2d.fromDegrees(-gyroValue);
     }
     
     public ChassisSpeeds getRobotRelativeChassisSpeeds() {
@@ -550,27 +558,29 @@ public class SwerveDrive extends SubsystemBase {
         // frontRightModule.updateConstants();
         // backLeftModule.updateConstants();
         // backRightModule.updateConstants();
+
+        gyroValue = gyro.getAngle();
         
         frontLeftModule.putInfo();
         frontRightModule.putInfo();
         backLeftModule.putInfo();
         backRightModule.putInfo();
         
-        SmartDashboard.putNumber("Gyro", -gyro.getAngle());
+        SmartDashboard.putNumber("Gyro", -getAngle());
         
         double[] limelightPoseArr = limelightNT.getEntry("botpose_wpiblue").getDoubleArray(new double[]{});
         // System.out.println(Arrays.toString(limelightPoseArr));
         if(limelightPoseArr.length > 6) {
             if(limelightPoseArr[7] == 1) {
                 // System.out.println("1 tag");
-                swerveOdometry.setVisionMeasurementStdDevs(VecBuilder.fill(6,6,4));
+                swerveOdometry.setVisionMeasurementStdDevs(VecBuilder.fill(6,6,2));
                 swerveOdometry.addVisionMeasurement(
                     getLimelightPose(limelightPoseArr),
                     LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight").timestampSeconds
                 );
             } else if(limelightPoseArr[7] >= 2) {
                 // System.out.println("> 2 tags");
-                swerveOdometry.setVisionMeasurementStdDevs(VecBuilder.fill(3, 3, 4));
+                swerveOdometry.setVisionMeasurementStdDevs(VecBuilder.fill(3, 3, 3));
                 swerveOdometry.addVisionMeasurement(
                     getLimelightPose(limelightPoseArr),
                     LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight").timestampSeconds
@@ -580,14 +590,14 @@ public class SwerveDrive extends SubsystemBase {
         }
 
 
-        Rotation2d robotRotation = gyro.getRotation2d();
-        if(DriverStation.getAlliance().equals(Optional.of(Alliance.Blue))) robotRotation = robotRotation.rotateBy(Rotation2d.fromDegrees(180));
+        Rotation2d robotRotation = getRotation2d();
+        if(LimelightHelpers.isBlueAlliance()) robotRotation = robotRotation.rotateBy(Rotation2d.fromDegrees(180));
         swerveOdometry.update(
             robotRotation,
             getModulePositions()
         );
         field.setRobotPose(swerveOdometry.getEstimatedPosition());
-        
+        // System.out.println(LimelightHelpers.isBlueAlliance());
         swerveDriveNT.getEntry("poseX").setDouble(swerveOdometry.getEstimatedPosition().getX());
         swerveDriveNT.getEntry("poseY").setDouble(swerveOdometry.getEstimatedPosition().getY());
         SmartDashboard.putData("Field", field);

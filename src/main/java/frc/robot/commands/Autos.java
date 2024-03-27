@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.commands.auto.AimShootOnly;
 import frc.robot.commands.auto.MidDoubleAuto;
 import frc.robot.commands.auto.NothingAuto;
 import frc.robot.commands.auto.ShootOnly;
@@ -34,6 +35,7 @@ public class Autos {
     public static final void initAutos(SwerveDrive swerve, Shooter shooter) {
         autoChooser.setDefaultOption("Speaker Back", new SpeakerBack(swerve, shooter));
         autoChooser.addOption("Speaker Back Far", new SpeakerBackFar(swerve, shooter));
+        autoChooser.addOption("Aimed Shoot Only", new AimShootOnly(swerve, shooter));
         autoChooser.addOption("Shoot Only", new ShootOnly(swerve, shooter));
         // autoChooser.addOption("Shoot Only", new SpeakerOnly(shooter));
         autoChooser.addOption("Do Nothing", new NothingAuto(swerve));
@@ -75,6 +77,19 @@ public class Autos {
     public static Command runSpeakerShot(Shooter shooter) {
         return Commands.sequence(
             shooter.runSetWristPosition(ShooterPosition.SPEAKER),
+            shooter.runShooter(10),
+            new WaitCommand(1.5),
+            shooter.runIndex(-15),
+            new WaitCommand(1.7),
+            shooter.runIndex(0),
+            shooter.runShooter(0),
+            shooter.runSetWristPosition(ShooterPosition.FLAT)
+        );
+    }
+
+    public static Command runAimedSpeakerShot(SwerveDrive swerve, Shooter shooter) {
+        return Commands.sequence(
+            new AimShooter(swerve, shooter),
             shooter.runShooter(10),
             new WaitCommand(1.5),
             shooter.runIndex(-15),

@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterPosition;
 import frc.robot.subsystems.swerve.SwerveDrive;
+import frc.robot.util.LimelightHelpers;
 
 public class AimShooter extends Command {
     private SwerveDrive swerve;
@@ -25,10 +26,11 @@ public class AimShooter extends Command {
     static {
         knownValues.clear();
         knownValues.put(1.46, 61.9);
-        knownValues.put(1.92, 44.3);
-        knownValues.put(2.58, 40.0);
-        knownValues.put(3.515, 37.5);
-        knownValues.put(4.28, 30.8);
+        knownValues.put(1.92, 50.3);
+        knownValues.put(2.58, 42.0);
+        knownValues.put(3.515, 37.0);
+        knownValues.put(3.88, 35.2);
+        knownValues.put(4.28, 31.7);
     }
 
     public AimShooter(SwerveDrive swerve, Shooter shooter) {
@@ -48,7 +50,7 @@ public class AimShooter extends Command {
     @Override
     public void initialize() {
         double x = swerve.getPose().getX();
-        x = DriverStation.getAlliance().equals(Optional.of(Alliance.Blue)) ?
+        x = LimelightHelpers.isBlueAlliance() ?
             x + Units.inchesToMeters(-1) :
             16.542 + Units.inchesToMeters(-1) - x;
         double y = swerve.getPose().getY() - 5.54;

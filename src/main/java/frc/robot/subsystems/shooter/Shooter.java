@@ -256,6 +256,8 @@ public class Shooter extends SubsystemBase {
         // prevent bouncing
         if(getWristPosition() > 90 + ShooterConstants.kShooterEncoderOffset && getWristPosition() < 100 + ShooterConstants.kShooterEncoderOffset && shooterPosition.equals(ShooterPosition.AMP)) {
             wristMotor.setVoltage(0.2 * wristPIDOutput + wristFFOutput);
+        } else if(getWristPosition() >= 100 + ShooterConstants.kShooterEncoderOffset && getWristPosition() < 120 + ShooterConstants.kShooterEncoderOffset && shooterPosition.equals(ShooterPosition.AMP)) {
+            wristMotor.setVoltage(0.5 * wristPIDOutput + wristFFOutput);
         } else {
             wristMotor.setVoltage(wristPIDOutput + wristFFOutput);
         }

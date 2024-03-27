@@ -87,6 +87,7 @@ public class RobotContainer {
 		swerveDrive.setRotationPresetInputs(
 			driverController.povDown()::getAsBoolean, // speaker
 			driverController.povRight()::getAsBoolean, // amp
+			// () -> driverController.povUp().getAsBoolean() || driverController.getRightY() < -0.5, // source
 			driverController.povUp()::getAsBoolean, // source
 			driverController.povLeft()::getAsBoolean // aimed speaker(may or may not use)
 		);
