@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 
 public class MechanismLigament2dWrapper {
+    // Made to be able to access current values of a ligament 2d if needed
     public final MechanismLigament2d ligament;
     private double angle;
     private Color8Bit color;
