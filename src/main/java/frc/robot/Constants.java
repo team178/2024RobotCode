@@ -149,4 +149,22 @@ public final class Constants {
 		public static final int kDriverControllerPort = 0;
 		public static final int kAuxControllerPort = 1;
 	}
+
+	public static class GregTechConstantsJr {
+		public GregTechConstantsJr() {
+			System.out.println("yuh-huh");
+			boolean greg = true;
+			if(greg) {
+				System.out.println("GregTech enjoyers are cool!");
+			} else {
+				System.out.println("NUH-UH");
+			}
+			int loveForGreg = Integer.MAX_VALUE;
+			boolean noLife = false;
+			if(loveForGreg > 0) noLife = true;
+			boolean chemistry = noLife;
+			int gradeInAPChem = loveForGreg/Integer.MAX_VALUE*100;
+			boolean tshirt = true;
+		}
+	}
 }
