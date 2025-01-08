@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-// Edited by Team 178 for adjustable constants
+// Edited by Team 178 for adjustable constants, based on edu.wpi.first.math.controller.SimpleMotorFeedforward
 
 package frc.robot.util;
 
@@ -148,6 +148,8 @@ public class MotorFF {
   public double minAchievableAcceleration(double maxVoltage, double angle, double velocity) {
     return maxAchievableAcceleration(-maxVoltage, angle, velocity);
   }
+
+  // Below getters and setters by Team 178
 
   public double getS() {
       return ks;
