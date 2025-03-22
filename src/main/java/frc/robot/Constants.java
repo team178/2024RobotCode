@@ -47,11 +47,11 @@ public final class Constants {
 		public static final double kTurnAbsPositionConversionFactor = Units.rotationsToRadians(1);
 
 		public static final double kMaxWheelSpeed = 8; // m/s
-		public static final double kMagVelLimit = 6; // m/s
+		public static final double kMagVelLimit = 2; // m/s
 		public static final double kDirVelLimit = 10; // rad/s
-		public static final double kRotVelLimit = 6; // rad/s
+		public static final double kRotVelLimit = 4; // rad/s
 		public static final double kMagAccelLimit = 48; // m/s^2
-		public static final double kRotAccelLimit = 30; // rad/s^2
+		public static final double kRotAccelLimit = 60; // rad/s^2
 		
 		public static final double kDefaultTestTurn = 0;
 		public static final double kDefaultTestDrive = 0;

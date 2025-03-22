@@ -142,6 +142,8 @@ public class RobotContainer {
 		// altController.rightBumper().onFalse(intake.runRoller(0));
 		// altController.rightTrigger().onTrue(intake.runRoller(16));
 		// altController.rightTrigger().onFalse(intake.runRoller(0));
+
+		altController.rightBumper().onTrue(swerveDrive.toggleEnabled());
 	}
 
 	public Command getAutonomousCommand() {

@@ -92,7 +92,10 @@ public class SwerveDrive extends SubsystemBase {
     private Field2d field;
     private Field2d limelightField;
 
+    private boolean enabled;
+
     public SwerveDrive() {
+        enabled = true;
         initComponents();
         initMathModels();
         initSimulations();
@@ -263,10 +266,21 @@ public class SwerveDrive extends SubsystemBase {
         });
     }
 
+    public Command toggleEnabled() {
+        return runOnce(() -> {
+            System.out.println(enabled);
+            enabled = !enabled;
+        });
+    }
+
     public Command runDriveInputs(
         DoubleSupplier rawXSpeed, DoubleSupplier rawYSpeed, DoubleSupplier rawRotSpeed,
         BooleanSupplier robotCentric, BooleanSupplier noOptimize, boolean rateLimited) {
         return run(() -> {
+            if(!enabled) {
+                adjustedDriveInputs(0, 0, 0, robotCentric.getAsBoolean(), noOptimize.getAsBoolean(), rateLimited);
+                return;
+            }
             double adjXSpeed = MathUtil.applyDeadband(rawXSpeed.getAsDouble(), 0.2);
             double adjYSpeed = MathUtil.applyDeadband(-rawYSpeed.getAsDouble(), 0.2);
 
@@ -393,9 +407,10 @@ public class SwerveDrive extends SubsystemBase {
 
     public void rawDriveInputs(double rawXSpeed, double rawYSpeed, double rawRotSpeed, boolean noOptimize, boolean robotCentric) {
         SwerveModuleState[] states = SwerveConstants.kSwerveKinematics.toSwerveModuleStates(!robotCentric ?
-            ChassisSpeeds.fromFieldRelativeSpeeds(rawXSpeed, rawYSpeed, rawRotSpeed, getRotation2d()) : // see if gyro is done correctly 
-            new ChassisSpeeds(rawXSpeed, rawYSpeed, rawRotSpeed)
+        ChassisSpeeds.fromFieldRelativeSpeeds(rawXSpeed, rawYSpeed, rawRotSpeed, getRotation2d()) : // see if gyro is done correctly 
+        new ChassisSpeeds(rawXSpeed, rawYSpeed, rawRotSpeed)
         );
+        // System.out.println(states[0].angle.getDegrees() + " " + rawXSpeed);
         // System.out.println(rawXSpeed + " " + rawYSpeed + " " + rawRotSpeed);
         rawModuleInputs(states, noOptimize);
     }

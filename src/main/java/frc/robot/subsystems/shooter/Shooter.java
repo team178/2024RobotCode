@@ -277,7 +277,7 @@ public class Shooter extends SubsystemBase {
                 indexSpeedFactor = 0.3;
                 break;
             case SPEAKER:
-                speedFactor = -1;
+                speedFactor = -0.35;
                 indexSpeedFactor = speedFactor;
                 break;
             case AMP:

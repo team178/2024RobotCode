@@ -128,6 +128,7 @@ public class SDSSwerveModule {
                         turnAbsEncoder.getPosition()
                     )
                 );
+                // correctedState.speedMetersPerSecond *= correctedState.angle.minus(new Rotation2d(turnAbsEncoder.getPosition())).minus(chassisAngularOffset).getCos();
             } else {
                 correctedState = SwerveModuleState.optimize(
                     correctedState,
