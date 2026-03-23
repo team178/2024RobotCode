@@ -33,6 +33,8 @@ public class RobotContainer {
 
 	private final CommandXboxController driverController;
 	private final CommandXboxController altController;
+	private final CommandXboxController overController;
+
 	private final SwerveDrive swerveDrive;
 	private final Shooter shooter;
 	// private final Intake intake;
@@ -48,6 +50,8 @@ public class RobotContainer {
 
 		driverController = new CommandXboxController(OperatorConstants.kDriverControllerPort);
 		altController = new CommandXboxController(OperatorConstants.kAuxControllerPort);
+		overController = new CommandXboxController(2);
+		
 
 		configureBindings();
 		ShuffleboardTab cameraTab = Shuffleboard.getTab("Camera");
@@ -75,14 +79,15 @@ public class RobotContainer {
 			.onTrue(swerveDrive.runSetArmSpeedFactor(0.2))
 			.onFalse(swerveDrive.runSetArmSpeedFactor(1));
 	
-		swerveDrive.setDefaultCommand(swerveDrive.runDriveInputs(
+		swerveDrive.setDefaultCommand(swerveDrive.runDriveInputsWithOverride(
 			driverController::getLeftX,
 			driverController::getLeftY,
 			driverController::getRightX, // use in real robot
 			// altController::getLeftX, //use in simulation
-			driverController.leftBumper()::getAsBoolean,
-			driverController.rightBumper()::getAsBoolean,
-			true
+			overController::getLeftX,
+			overController::getLeftY,
+			overController::getRightX,
+			overController.rightBumper()::getAsBoolean
 		));
 		swerveDrive.setRotationPresetInputs(
 			driverController.povDown()::getAsBoolean, // speaker
@@ -110,7 +115,7 @@ public class RobotContainer {
 		altController.a().onTrue(shooter.runSetWristPosition(ShooterPosition.SOURCE));
 		altController.b().onTrue(shooter.runSetWristPosition(ShooterPosition.FLAT));
 		altController.rightStick().onTrue(
-			shooter.runShooter(10)
+			shooter.runShooter(15)
 			.andThen(new WaitUntilCommand(() -> shooter.getShooterPosition().equals(ShooterPosition.SOURCE) && (!altController.leftTrigger().getAsBoolean()) || (shooter.getPhotosensor())))
 			.andThen(new WaitCommand(0.2))
 			.andThen(shooter.runIndex(0))
@@ -119,7 +124,7 @@ public class RobotContainer {
 		altController.leftBumper().onTrue(shooter.runIndex(-15));
 		altController.leftBumper().onFalse(shooter.runIndex(0));
 		altController.leftTrigger().onTrue(
-			shooter.runIndex(15)
+			shooter.runIndex(6)
 			.andThen(new WaitUntilCommand(() -> shooter.getShooterPosition().equals(ShooterPosition.SOURCE) && (!altController.leftTrigger().getAsBoolean()) || (shooter.getPhotosensor())))
 			.andThen(new WaitCommand(0.2))
 			.andThen(shooter.runIndex(0))

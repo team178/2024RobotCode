@@ -273,6 +273,46 @@ public class SwerveDrive extends SubsystemBase {
         });
     }
 
+    public Command runDriveInputsWithOverride(DoubleSupplier rawX, DoubleSupplier rawY, DoubleSupplier rawTurn, DoubleSupplier overX, DoubleSupplier overY, DoubleSupplier overTurn, BooleanSupplier overriden) {
+        return run(() -> {
+            if(!enabled) {
+                adjustedDriveInputs(0, 0, 0, false, false, true);
+                return;
+            }
+
+            // boolean overriden = overX.getAsDouble() > 0.2 || overY.getAsDouble() > 0.2 || overTurn.getAsDouble() > 0.2;
+            double a = 0.1; // min
+            double b = 0.2; // deadband
+            double steepness = 2; // minimum 1
+
+            double adjXSpeed;
+            double adjYSpeed;
+            double adjRotSpeed;
+            
+            if(overriden.getAsBoolean()) {
+                adjXSpeed = MathUtil.applyDeadband(overX.getAsDouble(), 0.2);
+                adjYSpeed = MathUtil.applyDeadband(-overY.getAsDouble(), 0.2);
+                adjRotSpeed = MathUtil.applyDeadband(-overTurn.getAsDouble(), b);
+            } else {
+                adjXSpeed = MathUtil.applyDeadband(rawX.getAsDouble(), 0.2);
+                adjYSpeed = MathUtil.applyDeadband(-rawY.getAsDouble(), 0.2);
+                adjRotSpeed = MathUtil.applyDeadband(-rawTurn.getAsDouble(), b);
+            }
+
+
+            adjRotSpeed = Math.signum(adjRotSpeed) * (
+                (1 - a) *
+                Math.pow(
+                    (Math.abs(adjRotSpeed) - b) / (1 - b),
+                    steepness
+                ) + a
+            );
+
+            adjustedDriveInputs(adjXSpeed, adjYSpeed, adjRotSpeed, false, false, true);
+        
+        });
+    }
+
     public Command runDriveInputs(
         DoubleSupplier rawXSpeed, DoubleSupplier rawYSpeed, DoubleSupplier rawRotSpeed,
         BooleanSupplier robotCentric, BooleanSupplier noOptimize, boolean rateLimited) {
